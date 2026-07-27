@@ -58,7 +58,31 @@
         .container-main { width: 95%; max-width: 1000px; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
         .header-gestor { text-align: center; margin-bottom: 20px; }
-        #save-status { font-size: 0.8rem; color: #27ae60; font-weight: bold; opacity: 0; transition: opacity 0.5s; }
+        #save-status { 
+            font-size: 0.85rem; 
+            font-weight: bold; 
+            opacity: 0; 
+            transition: opacity 0.5s, transform 0.3s; 
+            padding: 8px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        .status-saved {
+            color: #27ae60;
+            background: #e8f8f0;
+            border: 1px solid #d1f2e1;
+        }
+        .status-pending {
+            color: #d35400;
+            background: #fef5e7;
+            border: 1px solid #fdebd0;
+        }
+        .status-error {
+            color: #c0392b;
+            background: #fdedd8;
+            border: 1px solid #fadbd8;
+        }
         
         .alert-box {
             display: none; background: #ffdbdb; color: #b71c1c; padding: 12px;
@@ -91,12 +115,39 @@
         input[type="color"] { border: none; width: 35px; height: 35px; cursor: pointer; background: none; }
         .hex-code { font-family: monospace; font-size: 0.75rem; color: #888; width: 65px; }
         
-        .btn-reset {
-            display: block; margin: 30px auto; padding: 12px 25px;
-            background: var(--usa-verde-escuro); color: white; border: none; border-radius: 5px;
-            cursor: pointer; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;
+        /* BOTÕES */
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
         }
-        .btn-reset:hover { background: var(--usa-verde-medio); }
+        .btn-action {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-save {
+            background: linear-gradient(135deg, var(--usa-verde-medio), var(--usa-verde-escuro));
+            color: white;
+        }
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(45, 122, 76, 0.3);
+            filter: brightness(1.1);
+        }
+        .btn-save:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -124,7 +175,7 @@
     <div class="container-main">
         <div class="header-gestor">
             <h2 style="color: var(--usa-verde-escuro); margin-bottom: 5px;">🎨 Gestor de Cores Dinâmico</h2>
-            <div id="save-status">✅ Alterações salvas automaticamente!</div>
+            <div id="save-status">✅ Alterações salvas com sucesso!</div>
             <div id="duplicate-alert" class="alert-box">⚠️ Atenção: Você escolheu cores repetidas!</div>
         </div>
 
@@ -134,7 +185,11 @@
 
         <div class="grid-cores" id="lista-ocorrencias"></div>
 
-        <button class="btn-reset" onclick="resetarCores()">Gerar Novas Cores Exclusivas</button>
+        <div class="btn-container">
+            <button class="btn-action btn-save" onclick="salvarTodasAsCores()">
+                💾 Salvar Cores no Banco
+            </button>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -157,16 +212,27 @@
         let coresSalvas = {};
         let configSystem = null;
 
+        let configLoaded = false;
+        let coresLoaded = false;
+
         // Escutar as alterações de configurações e cores do Firebase em tempo real
         db.collection('app_data').doc('config').onSnapshot((doc) => {
             configSystem = doc.exists ? doc.data() : null;
-            processarEMostrar();
+            configLoaded = true;
+            verificarCarregamento();
         });
 
         db.collection('app_data').doc('cores').onSnapshot((doc) => {
             coresSalvas = doc.exists ? (doc.data().map || {}) : {};
-            processarEMostrar();
+            coresLoaded = true;
+            verificarCarregamento();
         });
+
+        function verificarCarregamento() {
+            if (configLoaded && coresLoaded) {
+                processarEMostrar();
+            }
+        }
 
         function processarEMostrar() {
             carregarMotivosDoSistema();
@@ -237,8 +303,26 @@
 
         function mostrarFeedbackSalvamento() {
             const status = document.getElementById('save-status');
+            status.innerText = "✅ Alterações salvas com sucesso no banco de dados!";
+            status.className = "status-saved";
             status.style.opacity = "1";
-            setTimeout(() => { status.style.opacity = "0"; }, 1000);
+            setTimeout(() => { status.style.opacity = "0"; }, 2500);
+        }
+
+        function mostrarFeedbackPendente() {
+            const status = document.getElementById('save-status');
+            status.innerText = "⚠️ Alterações pendentes de salvamento. Clique em 'Salvar Cores no Banco'.";
+            status.className = "status-pending";
+            status.style.opacity = "1";
+        }
+
+        function atualizarInterfaceColor(index, cor) {
+            const circle = document.getElementById(`circle-${index}`);
+            const item = document.getElementById(`item-${index}`);
+            const hex = document.getElementById(`hex-${index}`);
+            if (circle) circle.style.backgroundColor = cor;
+            if (item) item.style.borderLeftColor = cor;
+            if (hex) hex.innerText = cor.toUpperCase();
         }
 
         function renderizarLista() {
@@ -266,7 +350,7 @@
                     </div>
                     <div class="color-picker-container" style="display:flex; align-items:center; gap:8px;">
                         <span class="hex-code" id="hex-${i}">${corAtual.toUpperCase()}</span>
-                        <input type="color" value="${corAtual}" onchange="salvarItem('${texto}', ${i}, this.value)">
+                        <input type="color" value="${corAtual}" oninput="atualizarInterfaceColor(${i}, this.value)" onchange="marcarComoPendente('${texto}', ${i}, this.value)">
                     </div>
                 `;
                 container.appendChild(div);
@@ -276,24 +360,24 @@
             verificarDuplicatas();
         }
 
-        function salvarItem(texto, index, color) {
+        function marcarComoPendente(texto, index, color) {
             coresSalvas[texto] = color.toLowerCase();
-            db.collection('app_data').doc('cores').set({ map: coresSalvas }).then(() => {
-                document.getElementById(`circle-${index}`).style.backgroundColor = color;
-                document.getElementById(`item-${index}`).style.borderLeftColor = color;
-                document.getElementById(`hex-${index}`).innerText = color.toUpperCase();
-                mostrarFeedbackSalvamento();
-                verificarDuplicatas();
-            });
+            atualizarInterfaceColor(index, color);
+            verificarDuplicatas();
+            mostrarFeedbackPendente();
         }
 
-        function resetarCores() {
-            if(confirm("Deseja gerar novas cores automáticas?")) {
-                coresSalvas = {};
-                db.collection('app_data').doc('cores').set({ map: {} }).then(() => {
-                    processarEMostrar();
-                });
-            }
+        function salvarTodasAsCores() {
+            db.collection('app_data').doc('cores').set({ map: coresSalvas }).then(() => {
+                mostrarFeedbackSalvamento();
+                verificarDuplicatas();
+            }).catch(err => {
+                console.error("Erro ao salvar no Firebase: ", err);
+                const status = document.getElementById('save-status');
+                status.innerText = "❌ Erro ao salvar no banco de dados!";
+                status.className = "status-error";
+                status.style.opacity = "1";
+            });
         }
     </script>
 </body>
