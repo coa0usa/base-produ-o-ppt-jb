@@ -153,8 +153,29 @@
         </div>
     </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script>
-        const STORAGE_KEY = 'usa_v18_final';
+        let dadosGlobal = [];
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyBrII6e6J6CmcOgsPxq4UWnj9dVf3fY_dw",
+          authDomain: "base-producao-ppt.firebaseapp.com",
+          projectId: "base-producao-ppt",
+          storageBucket: "base-producao-ppt.firebasestorage.app",
+          messagingSenderId: "651044736107",
+          appId: "1:651044736107:web:db202cb04a0c5e23c7352e",
+          measurementId: "G-HS3RMY3SSX"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const dbFirestore = firebase.firestore();
+
+        // Escuta alterações de dados no Firestore em tempo real
+        dbFirestore.collection('app_data').doc('dados').onSnapshot((doc) => {
+            dadosGlobal = doc.exists ? (doc.data().list || []) : [];
+            gerarRelatorio();
+        });
 
         window.onload = () => {
             document.getElementById('input-data').value = new Date().toISOString().split('T')[0];
@@ -163,17 +184,17 @@
 
         function gerarRelatorio() {
             const dataInput = document.getElementById('input-data').value;
+            if(!dataInput) return;
             const dataBase = dataInput.split('-').reverse().join('/');
             document.getElementById('label-data').innerText = dataBase;
 
-            const db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
             const resumoPorProcesso = {};
 
             const dSeg = new Date(dataInput + "T12:00:00"); 
             dSeg.setDate(dSeg.getDate() + 1);
             const dataApos = dSeg.toISOString().split('T')[0].split('-').reverse().join('/');
 
-            const lancamentos = db.filter(i => {
+            const lancamentos = dadosGlobal.filter(i => {
                 const h = parseInt(i.hora);
                 return (h >= 5 && i.data === dataBase) || (h >= 0 && h <= 4 && i.data === dataApos);
             });

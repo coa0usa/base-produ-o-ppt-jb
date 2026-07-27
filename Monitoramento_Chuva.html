@@ -181,9 +181,31 @@
   </footer>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script>
-const STORAGE_KEY = 'usa_v18_final';
 const LAST_DATE_KEY = 'usa_ultima_data_consulta';
+let dadosGlobal = [];
+let unsubChuva = null;
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBrII6e6J6CmcOgsPxq4UWnj9dVf3fY_dw",
+  authDomain: "base-producao-ppt.firebaseapp.com",
+  projectId: "base-producao-ppt",
+  storageBucket: "base-producao-ppt.firebasestorage.app",
+  messagingSenderId: "651044736107",
+  appId: "1:651044736107:web:db202cb04a0c5e23c7352e",
+  measurementId: "G-HS3RMY3SSX"
+};
+
+firebase.initializeApp(firebaseConfig);
+const dbFirestore = firebase.firestore();
+
+// Escuta alterações de dados de frotas no Firestore em tempo real
+dbFirestore.collection('app_data').doc('dados').onSnapshot((doc) => {
+    dadosGlobal = doc.exists ? (doc.data().list || []) : [];
+    carregarDadosDaFrota();
+});
 
 window.onload = () => {
     // Sincroniza a data com a última data consultada no sistema (ou hoje como fallback)
@@ -282,20 +304,20 @@ function carregarDadosDaFrota() {
     // Grava a data selecionada para manter sincronia entre as abas
     localStorage.setItem(LAST_DATE_KEY, dataInput);
 
+    if (unsubChuva) {
+        unsubChuva();
+        unsubChuva = null;
+    }
+
     // Cálculo das datas operacional (05h de hoje até 04h de amanhã)
     const dataBase = dataInput.split('-').reverse().join('/');
     const dSeg = new Date(dataInput + "T12:00:00"); 
     dSeg.setDate(dSeg.getDate() + 1);
     const dataApos = dSeg.toISOString().split('T')[0].split('-').reverse().join('/');
 
-    const dbRaw = localStorage.getItem(STORAGE_KEY);
-    const db = dbRaw ? JSON.parse(dbRaw) : [];
-    const container = document.getElementById('frentesGrid');
-    const footerObs = document.querySelector('#footer-obs [contenteditable]');
-
     // 1. Mapear o que existe no Banco de Dados Real para este dia
     const agrupadoDB = {};
-    db.forEach(item => {
+    dadosGlobal.forEach(item => {
         const h = parseInt(item.hora);
         const isHoje = (h >= 5 && item.data === dataBase);
         const isAmanha = (h >= 0 && h <= 4 && item.data === dataApos);
@@ -306,51 +328,52 @@ function carregarDadosDaFrota() {
 
         const proc = (item.proc || "OPERACIONAL").toUpperCase();
         let fz = (item.fazenda || item.faz || "SEM FAZENDA").trim().toUpperCase();
-        // Normaliza o nome da fazenda para evitar duplicidade (ex: "10703 / RANCHARIA" vira "10703 - RANCHARIA")
         fz = fz.replace(/\s*\/\s*/g, ' - ').replace(/\s*-\s*/g, ' - ');
 
         if (!agrupadoDB[proc]) agrupadoDB[proc] = new Set();
         agrupadoDB[proc].add(fz);
     });
 
-    // 2. Tentar carregar o cache e SINCRONIZAR com as fazendas novas do DB
-    const cacheKey = 'usa_chuva_save_' + dataInput;
-    let report = JSON.parse(localStorage.getItem(cacheKey));
+    // 2. Escutar o relatório salvo deste dia no Firestore
+    unsubChuva = dbFirestore.collection('chuva_relatorios').doc(dataInput).onSnapshot((doc) => {
+        let report = doc.exists ? doc.data() : null;
 
-    if (report) {
-        let mudou = false;
-        // Sincronização: Se uma fazenda está no DB mas não está no relatório salvo, adiciona ela
-        Object.keys(agrupadoDB).forEach(proc => {
-            let card = report.cards.find(c => c.titulo === proc);
-            if (!card) {
-                card = { titulo: proc, rows: [] };
-                report.cards.push(card);
-                mudou = true;
-            }
-            agrupadoDB[proc].forEach(fz => {
-                if (!card.rows.find(r => r.faz === fz)) {
-                    card.rows.push({ faz: fz, fonte: "ZEUS", a: "0", b: "0", c: "0", total: "0,0 mm", status: "", statusClass: "" });
+        if (report) {
+            let mudou = false;
+            // Sincronização: Se uma fazenda está no DB mas não está no relatório salvo, adiciona ela
+            Object.keys(agrupadoDB).forEach(proc => {
+                let card = report.cards.find(c => c.titulo === proc);
+                if (!card) {
+                    card = { titulo: proc, rows: [] };
+                    report.cards.push(card);
                     mudou = true;
                 }
+                agrupadoDB[proc].forEach(fz => {
+                    if (!card.rows.find(r => r.faz === fz)) {
+                        card.rows.push({ faz: fz, fonte: "ZEUS", a: "0", b: "0", c: "0", total: "0,0 mm", status: "", statusClass: "" });
+                        mudou = true;
+                    }
+                });
             });
-        });
-        if (mudou) localStorage.setItem(cacheKey, JSON.stringify(report));
-    } else {
-        // 3. Caso não existam dados salvos, gerar do zero baseado no DB
-        report = { obs: "...", cards: [] };
-        Object.keys(agrupadoDB).sort().forEach(proc => {
-            const rows = Array.from(agrupadoDB[proc]).map(fz => ({
-                faz: fz, fonte: "ZEUS", a: "0", b: "0", c: "0", total: "0,0 mm", status: "", statusClass: ""
-            }));
-            report.cards.push({ titulo: proc, rows });
-        });
-    }
+            if (mudou) {
+                dbFirestore.collection('chuva_relatorios').doc(dataInput).set(report);
+                return;
+            }
+        } else {
+            // 3. Caso não existam dados salvos no Firestore, gerar do zero baseado no DB
+            report = { obs: "...", cards: [] };
+            Object.keys(agrupadoDB).sort().forEach(proc => {
+                const rows = Array.from(agrupadoDB[proc]).map(fz => ({
+                    faz: fz, fonte: "ZEUS", a: "0", b: "0", c: "0", total: "0,0 mm", status: "", statusClass: ""
+                }));
+                report.cards.push({ titulo: proc, rows });
+            });
+            dbFirestore.collection('chuva_relatorios').doc(dataInput).set(report);
+            return;
+        }
 
-    if (report.cards.length === 0) {
-        container.innerHTML = "<p style='text-align:center; padding:20px; color:#94a3b8;'>Nenhum registro encontrado para esta data.</p>";
-    } else {
         renderizarRelatorio(report);
-    }
+    });
 }
 
 function renderizarRelatorio(report) {
@@ -386,10 +409,8 @@ function renderizarRelatorio(report) {
 function updateTotal(el) {
     // Sanitização: permite apenas números e uma única vírgula
     let text = el.innerText;
-    // Substitui ponto por vírgula e remove tudo que não for dígito ou vírgula
     let clean = text.replace(/\./g, ',').replace(/[^\d,]/g, '');
     
-    // Garante que exista apenas uma vírgula no texto
     const firstComma = clean.indexOf(',');
     if (firstComma !== -1) {
         clean = clean.substring(0, firstComma + 1) + clean.substring(firstComma + 1).replace(/,/g, '');
@@ -397,7 +418,6 @@ function updateTotal(el) {
 
     if (text !== clean) {
         el.innerText = clean;
-        // Reposiciona o cursor no final do texto após a limpeza
         const range = document.createRange();
         const sel = window.getSelection();
         range.selectNodeContents(el);
@@ -419,7 +439,6 @@ function updateTotal(el) {
     display.innerText = soma.toFixed(1).replace('.', ',') + " mm";
     soma > 0 ? display.classList.add('has-rain') : display.classList.remove('has-rain');
     
-    // CHAMADA PARA SALVAR SEMPRE QUE O TOTAL FOR ATUALIZADO
     salvarDados(); 
 }
 
@@ -447,10 +466,9 @@ function salvarDados() {
     });
 
     const obs = document.querySelector('#footer-obs [contenteditable]').innerText;
-    localStorage.setItem('usa_chuva_save_' + dataInput, JSON.stringify({ cards, obs }));
+    dbFirestore.collection('chuva_relatorios').doc(dataInput).set({ cards, obs });
 }
 
-// Função que captura todos os dados da tela e salva no LocalStorage
 // Monitora qualquer mudança de texto ou edição
 document.addEventListener('blur', (e) => {
     if (e.target.classList.contains('turn-input') || 
@@ -458,20 +476,17 @@ document.addEventListener('blur', (e) => {
         e.target.classList.contains('input-fonte') || 
         e.target.classList.contains('input-status')) {
         
-        // Se for input de turno, atualiza o cálculo da soma
         if (e.target.classList.contains('turn-input')) {
             updateTotal(e.target);
         }
         
-        // Se for status, ajusta a cor
         if (e.target.classList.contains('input-status')) {
             colorirStatus(e.target);
         }
 
-        // Salva automaticamente após qualquer edição
         salvarDados();
     }
-}, true); // O 'true' captura o evento na fase de captura
+}, true);
 
 // Bloqueia a quebra de linha (Enter) nos campos editáveis
 document.addEventListener('keydown', (e) => {
@@ -487,10 +502,10 @@ document.addEventListener('keydown', (e) => {
             if (currentIndex !== -1 && currentIndex < allTurnInputs.length - 1) {
                 allTurnInputs[currentIndex + 1].focus();
             } else {
-                currentInput.blur(); // Se for o último, apenas tira o foco
+                currentInput.blur();
             }
         } else {
-            e.target.blur(); // Para val-edit, apenas tira o foco
+            e.target.blur();
         }
     }
 });
@@ -532,11 +547,7 @@ async function tirarPrint() {
         btn.innerText = "📸 Copiar para WhatsApp";
     }
 }
-
-// O onload agora é gerenciado pela função anônima no topo do script
 </script>
-
-
 
 </body>
 </html>

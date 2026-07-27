@@ -169,9 +169,30 @@
         </div>
     </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script>
-        const STORAGE_KEY = 'usa_v18_final'; 
         const LAST_DATE_KEY = 'usa_ultima_data_consulta';
+        let dadosGlobal = [];
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyBrII6e6J6CmcOgsPxq4UWnj9dVf3fY_dw",
+          authDomain: "base-producao-ppt.firebaseapp.com",
+          projectId: "base-producao-ppt",
+          storageBucket: "base-producao-ppt.firebasestorage.app",
+          messagingSenderId: "651044736107",
+          appId: "1:651044736107:web:db202cb04a0c5e23c7352e",
+          measurementId: "G-HS3RMY3SSX"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const dbFirestore = firebase.firestore();
+
+        // Escuta alterações de dados no Firestore em tempo real
+        dbFirestore.collection('app_data').doc('dados').onSnapshot((doc) => {
+            dadosGlobal = doc.exists ? (doc.data().list || []) : [];
+            gerarResumoGeral();
+        });
 
         window.onload = () => {
             let dataSalva = localStorage.getItem(LAST_DATE_KEY) || new Date().toISOString().split('T')[0];
@@ -187,18 +208,18 @@
 
         function gerarResumoGeral() {
             const dataInput = document.getElementById('filtro-data').value;
+            if(!dataInput) return;
             const dataBase = dataInput.split('-').reverse().join('/');
             const dSeg = new Date(dataInput + "T12:00:00"); 
             dSeg.setDate(dSeg.getDate() + 1);
             const dataApos = dSeg.toISOString().split('T')[0].split('-').reverse().join('/');
             
             document.getElementById('txt-data').innerText = dataBase;
-            const db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
             
             const resumoPorProcesso = {};
             let somaGeralHa = 0;
 
-            const lancamentos = db.filter(i => {
+            const lancamentos = dadosGlobal.filter(i => {
                 const h = parseInt(i.hora);
                 const isHoje = (h >= 5 && i.data === dataBase);
                 const isAmanha = (h >= 0 && h <= 4 && i.data === dataApos);
