@@ -210,14 +210,40 @@
     <input type="date" id="filtro-data" class="input-data-compacto" onchange="salvarEAtualizar()">
 </footer>
 
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script>
-    // Seus scripts JavaScript permanecem inalterados aqui
     Chart.register(ChartDataLabels);
-    const STORAGE_KEY = 'usa_v18_final';
     const CONFIG_KEY = 'usa_last_ui_config';
-    const COLOR_KEY = 'usa_v18_colors';
     const horasArr = ["05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","00","01","02","03","04"];
     let chartInstances = {};
+    let dadosGlobal = [];
+    let coresSalvas = {};
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBrII6e6J6CmcOgsPxq4UWnj9dVf3fY_dw",
+      authDomain: "base-producao-ppt.firebaseapp.com",
+      projectId: "base-producao-ppt",
+      storageBucket: "base-producao-ppt.firebasestorage.app",
+      messagingSenderId: "651044736107",
+      appId: "1:651044736107:web:db202cb04a0c5e23c7352e",
+      measurementId: "G-HS3RMY3SSX"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Sincroniza dados do Firestore em tempo real
+    db.collection('app_data').doc('dados').onSnapshot((doc) => {
+        dadosGlobal = doc.exists ? (doc.data().list || []) : [];
+        carregarDados();
+    });
+
+    // Sincroniza cores do Firestore em tempo real
+    db.collection('app_data').doc('cores').onSnapshot((doc) => {
+        coresSalvas = doc.exists ? (doc.data().map || {}) : {};
+        carregarDados();
+    });
 
     window.onload = () => {
         const ultimaConfig = JSON.parse(localStorage.getItem(CONFIG_KEY));
@@ -234,9 +260,8 @@
     };
 
     function obterCor(motivo) {
-        const coresCustom = JSON.parse(localStorage.getItem(COLOR_KEY)) || {};
         const motivoNormalizado = motivo.toUpperCase().trim();
-        if (coresCustom[motivoNormalizado]) return coresCustom[motivoNormalizado];
+        if (coresSalvas[motivoNormalizado]) return coresSalvas[motivoNormalizado];
         if (motivoNormalizado === "PRODUTIVO") return "#2D7A4C";
         let hash = 0;
         for (let i = 0; i < motivoNormalizado.length; i++) {
@@ -272,7 +297,6 @@
     function carregarDados() {
         const dataInput = document.getElementById('filtro-data').value;
         const processoSelecionado = document.getElementById('select-proc').value;
-        const db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         
         // CORREÇÃO: Usando funções auxiliares para datas precisas
         const dataBase = limparHorasEFormatar(dataInput); // "03/12/2024"
@@ -283,7 +307,7 @@
         document.getElementById('data-txt').innerText = dataBase;
 
         // CORREÇÃO: Lógica de filtragem refinada para garantir a correspondência de data E hora
-        const dadosFiltrados = db.filter(i => {
+        const dadosFiltrados = dadosGlobal.filter(i => {
             if (i.proc.toLowerCase() !== processoSelecionado.toLowerCase()) return false;
 
             const h = parseInt(i.hora);
