@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOCALIZAÇÃO DE FROTA - COA USA</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --usa-verde-escuro: #004A2F;
+            --usa-verde-medio: #2D7A4C;
+            --usa-verde-claro: #B2D969;
+            --usa-laranja: #ff9800;
+            --bg-gray: #f4f7f6;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            margin: 0; 
+            background: var(--bg-gray); 
+            padding-top: 130px; 
+            color: #333;
+        }
+
+        /* CABEÇALHO PADRÃO */
+        .header-main {
+            background-color: var(--usa-verde-escuro);
+            color: white; padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1001; box-sizing: border-box;
+        }
+
+        .nav-tabs {
+            background: #f8f9fa;
+            border-bottom: 3px solid var(--usa-verde-claro);
+            position: fixed; top: 65px; left: 0; width: 100%;
+            display: flex; gap: 2px; padding: 0 10px;
+            z-index: 1000; overflow-x: auto; white-space: nowrap;
+        }
+
+        .tab-item {
+            padding: 12px 20px; text-decoration: none; color: #555; font-size: 11px;
+            font-weight: bold; text-transform: uppercase; border-top-left-radius: 8px;
+            border-top-right-radius: 8px; transition: 0.3s; border: 1px solid transparent;
+            display: flex; align-items: center; gap: 5px;
+        }
+
+        .tab-active { 
+            background: white !important; 
+            color: var(--usa-verde-escuro) !important; 
+            border: 1px solid #dee2e6; 
+            border-bottom: 3px solid white; 
+            position: relative; 
+            top: 1px; 
+        }
+
+        /* CONTEÚDO ESPECÍFICO */
+        .container-resumo { 
+            max-width: 600px; 
+            margin: 20px auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+        }
+
+        .header-print {
+            border-bottom: 3px solid var(--usa-verde-escuro);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .titulo-principal { 
+            color: var(--usa-verde-escuro); 
+            margin: 0; 
+            font-size: 18px; 
+            text-transform: uppercase; 
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .data-badge { 
+            font-weight: bold; 
+            color: white; 
+            background: var(--usa-verde-medio); 
+            padding: 8px 15px; 
+            border-radius: 20px; 
+            font-size: 13px; 
+        }
+
+        .secao-processo { margin-bottom: 20px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+        .topo-processo { 
+            background: #f8f9fa; 
+            padding: 10px 15px; 
+            border-bottom: 2px solid var(--usa-verde-escuro);
+        }
+        .nome-processo { font-weight: 800; color: var(--usa-verde-escuro); text-transform: uppercase; font-size: 13px; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { background: white; color: #666; padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #eee; }
+        td { padding: 12px; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
+        
+        .col-ultima { color: #d35400; font-weight: bold; width: 60%; }
+        .col-frota { font-weight: bold; color: #333; width: 40%; }
+
+        .no-print { 
+            margin-bottom: 20px; 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            align-items: center; 
+            flex-wrap: wrap; 
+        }
+
+        .btn-copiar { 
+            padding: 10px 22px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            background: #25d366; 
+            color: white; 
+            transition: 0.3s;
+        }
+
+        .data-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="date"] { border: none; font-family: inherit; font-weight: bold; outline: none; }
+    </style>
+</head>
+<body>
+
+    <header class="header-main">
+        <div style="visibility: hidden;">Apoio</div>
+        <div style="text-align: center;">
+            <div style="font-size: 14px; font-weight: 800;">SISTEMA INTEGRADO DE LOGÍSTICA</div>
+            <div style="font-size: 10px; color: var(--usa-verde-claro);">USINA SANTA ADÉLIA</div>
+        </div>
+        <div style="visibility: hidden;">Apoio</div>
+    </header>
+
+    <nav class="nav-tabs">
+        <a href="Gestor de Cores.html" class="tab-item">🎨 Gestor de Cores</a>
+        <a href="Cadastros.html" class="tab-item">⚙️ Cadastros</a>
+        <a href="Localizacao_Frota.html" class="tab-item tab-active">🚜 Localização Frota</a>
+        <a href="Monitoramento_Chuva.html" class="tab-item">🌧️ Chuva</a>
+        <a href="Resumo_PPT.html" class="tab-item">📈 Resumo PPT</a>
+        <a href="Pasta_viva.html" class="tab-item">📂 Pasta Viva</a>
+        <a href="Banco_dados_PPT.html" class="tab-item">🗄️ Banco de Dados</a>
+        <a href="Graficos_Herbicida.html" class="tab-item">📊 Graficos</a>
+    </nav>
+
+    <div class="no-print">
+        <div class="data-box">
+            <input type="date" id="filtro-data" onchange="gerarResumoGeral()">
+        </div>
+        <button onclick="copiarImagem()" class="btn-copiar">📸 COPIAR LOCALIZAÇÕES</button>
+    </div>
+
+    <div class="container-resumo" id="area-print">
+        <div class="header-print">
+            <h2 class="titulo-principal">📍 LOCALIZAÇÃO DA FROTA</h2>
+            <span class="data-badge" id="txt-data">--/--/----</span>
+        </div>
+
+        <div id="conteudo-resumo"></div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'usa_v18_final'; 
+
+        window.onload = () => {
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('filtro-data').value = hoje;
+            gerarResumoGeral();
+        };
+
+        function gerarResumoGeral() {
+            const dataInput = document.getElementById('filtro-data').value;
+            if(!dataInput) return;
+
+            const dataBase = dataInput.split('-').reverse().join('/');
+            const dSeg = new Date(dataInput + "T12:00:00"); 
+            dSeg.setDate(dSeg.getDate() + 1);
+            const dataApos = dSeg.toISOString().split('T')[0].split('-').reverse().join('/');
+            
+            document.getElementById('txt-data').innerText = dataBase;
+            const db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            
+            const resumoPorProcesso = {};
+            const ultimaFazendaPorEquipamento = {};
+
+            const lancamentos = db.filter(i => {
+                const h = parseInt(i.hora);
+                const isHoje = (h >= 5 && i.data === dataBase);
+                const isAmanha = (h >= 0 && h <= 4 && i.data === dataApos);
+                return isHoje || isAmanha;
+            });
+
+            lancamentos.sort((a, b) => parseInt(a.hora) - parseInt(b.hora)).forEach(i => {
+                const frota = i.eq || "N/A";
+                const faz = i.fazenda || i.faz || "N/A";
+                const proc = (i.proc || "OUTROS").toUpperCase();
+                ultimaFazendaPorEquipamento[frota] = { fazenda: faz, processo: proc };
+            });
+
+            Object.keys(ultimaFazendaPorEquipamento).forEach(frota => {
+                const info = ultimaFazendaPorEquipamento[frota];
+                if (!resumoPorProcesso[info.processo]) resumoPorProcesso[info.processo] = [];
+                resumoPorProcesso[info.processo].push({
+                    frota: frota,
+                    fazenda: info.fazenda
+                });
+            });
+
+            const container = document.getElementById('conteudo-resumo');
+            container.innerHTML = "";
+            const processosOrdenados = Object.keys(resumoPorProcesso).sort();
+
+            if (processosOrdenados.length === 0) {
+                container.innerHTML = `<p style="text-align:center; padding:50px; color:#999;">Sem registros para esta data.</p>`;
+            }
+
+            processosOrdenados.forEach(pName => {
+                let htmlProc = `
+                    <div class="secao-processo">
+                        <div class="topo-processo">
+                            <span class="nome-processo">🚜 ${pName}</span>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Última Loc. Registrada</th>
+                                    <th>Frota</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+                const listaOrdenada = resumoPorProcesso[pName].sort((a, b) => a.fazenda.localeCompare(b.fazenda));
+                
+                listaOrdenada.forEach(item => {
+                    htmlProc += `
+                        <tr>
+                            <td class="col-ultima">📍 ${item.fazenda}</td>
+                            <td class="col-frota">${item.frota}</td>
+                        </tr>`;
+                });
+
+                htmlProc += `</tbody></table></div>`;
+                container.innerHTML += htmlProc;
+            });
+        }
+
+        async function copiarImagem() {
+            const area = document.getElementById("area-print");
+            const btn = document.querySelector('.btn-copiar');
+            btn.innerText = "⏳ GERANDO...";
+
+            try {
+                const canvas = await html2canvas(area, { backgroundColor: "#ffffff", scale: 2 });
+                canvas.toBlob(blob => {
+                    const item = new ClipboardItem({ "image/png": blob });
+                    navigator.clipboard.write([item]);
+                    btn.innerText = "✅ COPIADO!";
+                    setTimeout(() => {
+                        btn.innerText = "📸 COPIAR LOCALIZAÇÕES";
+                    }, 2000);
+                });
+            } catch (err) {
+                alert("Erro ao copiar.");
+                btn.innerText = "📸 COPIAR LOCALIZAÇÕES";
+            }
+        }
+    </script>
+</body>
+</html>

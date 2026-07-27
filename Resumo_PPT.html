@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESUMO GERAL DE OPERAÇÕES - COA USA</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --usa-verde-escuro: #004A2F;
+            --usa-verde-medio: #2D7A4C;
+            --usa-verde-claro: #B2D969;
+            --usa-laranja: #ff9800;
+            --usa-cinza-claro: #f0f2f5;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            background: var(--usa-cinza-claro); 
+            padding-top: 130px; 
+        }
+
+        /* --- CABEÇALHO E ABAS --- */
+        .header-main {
+            background-color: var(--usa-verde-escuro);
+            color: white; padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1001; box-sizing: border-box;
+        }
+
+        .nav-tabs {
+            background: #f8f9fa;
+            border-bottom: 3px solid var(--usa-verde-claro);
+            position: fixed; top: 65px; left: 0; width: 100%;
+            display: flex; gap: 2px; padding: 0 10px;
+            z-index: 1000; overflow-x: auto; white-space: nowrap;
+        }
+
+        .tab-item {
+            padding: 12px 20px; text-decoration: none; color: #555; font-size: 11px;
+            font-weight: bold; text-transform: uppercase; border-top-left-radius: 8px;
+            border-top-right-radius: 8px; transition: 0.3s; border: 1px solid transparent;
+            display: flex; align-items: center; gap: 5px;
+        }
+
+        .tab-active { 
+            background: white !important; 
+            color: var(--usa-verde-escuro) !important; 
+            border: 1px solid #dee2e6; 
+            border-bottom: 3px solid white; 
+            position: relative; 
+            top: 1px; 
+        }
+
+        /* --- CONTEÚDO DO RELATÓRIO --- */
+        .container-resumo { 
+            max-width: 950px; 
+            margin: 0 auto 40px auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+        }
+
+        .header-print {
+            border-bottom: 3px solid var(--usa-verde-escuro);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .titulo-principal { color: var(--usa-verde-escuro); margin: 0; font-size: 20px; text-transform: uppercase; font-weight: 800; }
+        .data-badge { font-weight: bold; color: white; background: var(--usa-verde-medio); padding: 8px 18px; border-radius: 20px; font-size: 14px; }
+
+        .secao-processo { 
+            margin-bottom: 30px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            background: #fff;
+        }
+        
+        .topo-processo { 
+            background: #f8f9fa; 
+            padding: 10px 15px; 
+            border-bottom: 2px solid var(--usa-verde-escuro);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        .nome-processo { font-weight: 800; color: var(--usa-verde-escuro); font-size: 14px; }
+        .total-processo { font-weight: 900; color: #d35400; background: #fff3e0; padding: 4px 10px; border-radius: 5px; border: 1px solid var(--usa-laranja); }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #fafafa; color: #333; padding: 8px; text-align: left; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #eee; }
+        td { padding: 8px; border-bottom: 1px solid #f2f2f2; font-size: 12px; }
+        
+        .titulo-sub-tabela { background: #f1f1f1; padding: 8px 15px; font-size: 11px; font-weight: bold; color: #555; text-transform: uppercase; border-top: 1px solid #ddd; }
+
+        .footer-geral {
+            margin-top: 20px;
+            padding: 20px;
+            background: var(--usa-verde-escuro);
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* --- CONTROLES --- */
+        .no-print { margin-bottom: 20px; display: flex; justify-content: center; gap: 15px; align-items: center; }
+        .btn-acao { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 13px; transition: 0.3s; }
+        .btn-copiar { background: #25d366; }
+        .btn-pdf { background: #e74c3c; }
+        .data-box { background: white; padding: 5px 12px; border-radius: 8px; border: 1px solid #ccc; display: flex; align-items: center; gap: 8px; }
+
+        @media print {
+            body { padding-top: 0; }
+            .header-main, .nav-tabs, .no-print { display: none !important; }
+            .container-resumo { box-shadow: none; border: none; width: 100%; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-main">
+        <div style="visibility: hidden;">Apoio</div>
+        <div style="text-align: center;">
+            <div style="font-size: 14px; font-weight: 800;">SISTEMA INTEGRADO DE LOGÍSTICA</div>
+            <div style="font-size: 10px; color: var(--usa-verde-claro);">USINA SANTA ADÉLIA</div>
+        </div>
+        <div style="visibility: hidden;">Apoio</div>
+    </header>
+
+    <nav class="nav-tabs">
+        <a href="Gestor de Cores.html" class="tab-item">🎨 Gestor de Cores</a>
+        <a href="Cadastros.html" class="tab-item">⚙️ Cadastros</a>
+        <a href="Localizacao_Frota.html" class="tab-item">🚜 Localização Frota</a>
+        <a href="Monitoramento_Chuva.html" class="tab-item">🌧️ Chuva</a>
+        <a href="Resumo_PPT.html" class="tab-item tab-active">📈 Resumo PPT</a>
+        <a href="Pasta_viva.html" class="tab-item">📂 Pasta Viva</a>
+        <a href="Banco_dados_PPT.html" class="tab-item">🗄️ Banco de Dados</a>
+        <a href="Graficos_Herbicida.html" class="tab-item">📊 Graficos</a>
+    </nav>
+
+    <div class="no-print">
+        <div class="data-box">
+            <label style="font-weight: bold; font-size: 12px;">FILTRAR DATA:</label>
+            <input type="date" id="filtro-data" onchange="atualizarEGravar()">
+        </div>
+        <button onclick="copiarImagem()" class="btn-acao btn-copiar">📸 COPIAR P/ WHATSAPP</button>
+        <button onclick="window.print()" class="btn-acao btn-pdf">📄 GERAR PDF / IMPRIMIR</button>
+    </div>
+
+    <div class="container-resumo" id="area-print">
+        <div class="header-print">
+            <h2 class="titulo-principal">COA - RELATÓRIO DIÁRIO DE OPERAÇÕES</h2>
+            <span class="data-badge" id="txt-data">--/--/----</span>
+        </div>
+
+        <div id="conteudo-resumo"></div>
+
+        <div class="footer-geral">
+            <span>PRODUÇÃO TOTAL: <span id="txt-total-ha">0.0</span> HA</span>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'usa_v18_final'; 
+        const LAST_DATE_KEY = 'usa_ultima_data_consulta';
+
+        window.onload = () => {
+            let dataSalva = localStorage.getItem(LAST_DATE_KEY) || new Date().toISOString().split('T')[0];
+            document.getElementById('filtro-data').value = dataSalva;
+            gerarResumoGeral();
+        };
+
+        function atualizarEGravar() {
+            const data = document.getElementById('filtro-data').value;
+            localStorage.setItem(LAST_DATE_KEY, data);
+            gerarResumoGeral();
+        }
+
+        function gerarResumoGeral() {
+            const dataInput = document.getElementById('filtro-data').value;
+            const dataBase = dataInput.split('-').reverse().join('/');
+            const dSeg = new Date(dataInput + "T12:00:00"); 
+            dSeg.setDate(dSeg.getDate() + 1);
+            const dataApos = dSeg.toISOString().split('T')[0].split('-').reverse().join('/');
+            
+            document.getElementById('txt-data').innerText = dataBase;
+            const db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            
+            const resumoPorProcesso = {};
+            let somaGeralHa = 0;
+
+            const lancamentos = db.filter(i => {
+                const h = parseInt(i.hora);
+                const isHoje = (h >= 5 && i.data === dataBase);
+                const isAmanha = (h >= 0 && h <= 4 && i.data === dataApos);
+                return isHoje || isAmanha;
+            });
+
+            lancamentos.forEach(i => {
+                const proc = (i.proc || "OPERACIONAL").toUpperCase();
+                const v = parseFloat(i.qtd || 0);
+                const oper = (i.oper || "N/A").toUpperCase();
+
+                if (oper === "PARADO" || oper === "N/A") return;
+
+                let fz = (i.fazenda || i.faz || "N/A").trim().toUpperCase();
+                // Normaliza o nome da fazenda para evitar duplicidade devido a separadores inconsistentes
+                fz = fz.replace(/\s*\/\s*/g, ' - ').replace(/\s*-\s*/g, ' - ');
+
+                if (!resumoPorProcesso[proc]) {
+                    resumoPorProcesso[proc] = { detalhe: {}, somaOp: {}, total: 0 };
+                }
+
+                const chave = `${i.eq}_${fz}_${oper}`;
+                if (!resumoPorProcesso[proc].detalhe[chave]) {
+                    resumoPorProcesso[proc].detalhe[chave] = { eq: i.eq, faz: fz, oper, total: 0, horas: 0 };
+                }
+                resumoPorProcesso[proc].detalhe[chave].total += v;
+                if(i.status === "PRODUTIVO") resumoPorProcesso[proc].detalhe[chave].horas++;
+
+                resumoPorProcesso[proc].somaOp[oper] = (resumoPorProcesso[proc].somaOp[oper] || 0) + v;
+                resumoPorProcesso[proc].total += v;
+                somaGeralHa += v;
+            });
+
+            const container = document.getElementById('conteudo-resumo');
+            container.innerHTML = "";
+
+            Object.keys(resumoPorProcesso).sort().forEach(p => {
+                const d = resumoPorProcesso[p];
+                let html = `
+                    <div class="secao-processo">
+                        <div class="topo-processo">
+                            <span class="nome-processo">🚜 PROCESSO: ${p}</span>
+                            <span class="total-processo">TOTAL: ${d.total.toFixed(1)} HA</span>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Frota</th>
+                                    <th>Fazenda</th>
+                                    <th>Operação</th>
+                                    <th style="text-align:right">HA</th>
+                                    <th style="text-align:right">Rend</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                
+                Object.values(d.detalhe).sort((a,b) => a.eq.localeCompare(b.eq)).forEach(r => {
+                    html += `<tr>
+                        <td><b>${r.eq}</b></td>
+                        <td>${r.faz}</td>
+                        <td>${r.oper}</td>
+                        <td style="text-align:right"><b>${r.total.toFixed(1)}</b></td>
+                        <td style="text-align:right; color:#777;">${(r.total / (r.horas || 1)).toFixed(1)}</td>
+                    </tr>`;
+                });
+
+                html += `</tbody></table>
+                        <div class="titulo-sub-tabela">Consolidado por Operação</div>
+                        <table><tbody>`;
+                
+                Object.keys(d.somaOp).sort().forEach(op => {
+                    html += `<tr>
+                        <td style="font-weight:600; color:#444;">${op}</td>
+                        <td style="text-align:right; font-weight:800; font-size:13px;">${d.somaOp[op].toFixed(1)} HA</td>
+                    </tr>`;
+                });
+                html += `</tbody></table></div>`;
+                container.innerHTML += html;
+            });
+
+            document.getElementById('txt-total-ha').innerText = somaGeralHa.toFixed(1);
+        }
+
+        async function copiarImagem() {
+            const area = document.getElementById("area-print");
+            const btn = document.querySelector('.btn-copiar');
+            btn.innerText = "⏳ GERANDO PRINT...";
+            
+            try {
+                const canvas = await html2canvas(area, { 
+                    scale: 2, 
+                    backgroundColor: "#ffffff",
+                    height: area.scrollHeight,
+                    windowHeight: area.scrollHeight
+                });
+                canvas.toBlob(blob => {
+                    const item = new ClipboardItem({ "image/png": blob });
+                    navigator.clipboard.write([item]);
+                    btn.innerText = "✅ COPIADO!";
+                    setTimeout(() => btn.innerText = "📸 COPIAR P/ WHATSAPP", 2000);
+                });
+            } catch (err) {
+                alert("Erro ao copiar imagem.");
+                btn.innerText = "📸 COPIAR P/ WHATSAPP";
+            }
+        }
+    </script>
+</body>
+</html>

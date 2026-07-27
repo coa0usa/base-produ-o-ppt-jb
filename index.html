@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torre PPT | Usina Santa Adélia</title>
+    <style>
+        :root {
+            --verde-sa: #1b5e20;
+            --verde-claro: #4caf50;
+            --verde-pale: #f1f8e9;
+            --azul-chuva: #2980b9;
+            --laranja-frota: #d35400;
+            --roxo-pasta: #6c5ce7;
+            --sidebar-width: 280px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            display: flex;
+            background-color: #f4f7f4;
+            color: #333;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            height: 100vh;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand {
+            background-color: var(--verde-sa);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .brand h2 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; }
+        .brand span { font-size: 0.8rem; opacity: 0.8; }
+
+        .menu-label {
+            padding: 20px 25px 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #999;
+            text-transform: uppercase;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 25px;
+            color: #555;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .menu-item:hover { background: var(--verde-pale); color: var(--verde-sa); }
+        .icon { margin-right: 15px; font-size: 1.1rem; width: 20px; text-align: center; }
+
+        /* --- CONTEÚDO --- */
+        .main {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 30px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .welcome-banner {
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .welcome-banner h1 { margin: 0 0 10px 0; font-size: 1.8rem; }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .card h3 { color: var(--verde-sa); margin-top: 0; }
+        
+        .msg-line {
+            border-left: 4px solid var(--verde-claro);
+            padding-left: 15px;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand">
+            <h2>USINA SANTA ADÉLIA</h2>
+            <span>Torre de Monitoramento</span>
+        </div>
+        
+        <div class="menu-label">Administração</div>
+        <a href="Resumo_PPT.html" class="menu-item"><span class="icon">📊</span> Resumo PPT</a>
+        <a href="Banco_dados_PPT.html" class="menu-item"><span class="icon">📁</span> Banco de Dados</a>
+        <a href="Cadastros.html" class="menu-item"><span class="icon">📝</span> Cadastros</a>
+
+        <div class="menu-label">Monitoramento</div>
+        <a href="Pasta_viva.html" class="menu-item" style="color: var(--roxo-pasta);"><span class="icon">📂</span> Pasta Viva</a>
+        <a href="Localizacao_Frota.html" class="menu-item" style="color: var(--laranja-frota);"><span class="icon">📍</span> Localização</a>
+        <a href="Monitoramento_Chuva.html" class="menu-item" style="color: var(--azul-chuva);"><span class="icon">⛈️</span> Chuva</a>
+
+        <div class="menu-label">Relatórios</div>
+        <!-- Alterado para abrir o arquivo Graficos_Herbicida.html -->
+        <a href="Graficos_Herbicida.html" class="menu-item" style="font-weight: bold; color: #2c3e50;">
+            <span class="icon">📈</span> GRÁFICOS GERAIS
+        </a>
+    </nav>
+
+    <main class="main">
+        <header class="top-bar">
+            <div>Gestão PPT / <strong>Painel Principal</strong></div>
+            <div><strong>COA - Centro Operações Agrícola</strong></div>
+        </header>
+
+        <section class="welcome-banner">
+            <h1>Sistema Integrado USA</h1>
+            <p>O COA é o coração pulsante da Usina Santa Adélia. Onde a estratégia encontra a execução.</p>
+        </section>
+
+        <section class="cards-container">
+            <div class="card">
+                <h3>Mensagem do dia</h3>
+                <p class="msg-line" id="txt-mensagem">Carregando...</p>
+            </div>
+            <div class="card">
+                <h3>Aspiração</h3>
+                <p>Sustentar posicionamento de liderança em rentabilidade operacional no setor sucroenergético do país.</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const frases = [
+            "Domingo: Planejando o próximo ciclo. O COA não para!",
+            "Segunda: O COA é a bússola que guia nossa produção.",
+            "Terça: No COA, o detalhe faz a diferença. Foco total!",
+            "Quarta: Ritmo de safra! Somos o coração da Santa Adélia.",
+            "Quinta: Agilidade para resolver e inteligência para prevenir.",
+            "Sexta: Metas batidas no campo passam primeiro pelos nossos olhos.",
+            "Sábado: Sentinelas da produtividade. Nossa vigilância garante o sucesso."
+        ];
+        document.getElementById("txt-mensagem").innerText = frases[new Date().getDay()];
+    </script>
+</body>
+</html>

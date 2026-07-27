@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA INTEGRADO - USINA SANTA ADÉLIA</title>
+    
+    <style>
+        :root {
+            --usa-verde-escuro: #004A2F;
+            --usa-verde-medio: #2D7A4C;
+            --usa-verde-claro: #B2D969;
+            --usa-laranja: #ff9800;
+            --bg-gray: #f4f7f6;
+            --danger: #c62828;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: var(--bg-gray); padding-top: 130px; }
+
+        /* CABEÇALHO E ABAS */
+        .header-main {
+            background-color: var(--usa-verde-escuro);
+            color: white; padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1001; box-sizing: border-box;
+        }
+
+        .nav-tabs {
+            background: #f8f9fa;
+            border-bottom: 3px solid var(--usa-verde-claro);
+            position: fixed; top: 65px; left: 0; width: 100%;
+            display: flex; gap: 2px; padding: 0 10px;
+            z-index: 1000; overflow-x: auto; white-space: nowrap;
+        }
+
+        .tab-item {
+            padding: 12px 20px; text-decoration: none; color: #555; font-size: 11px;
+            font-weight: bold; text-transform: uppercase; border-top-left-radius: 8px;
+            border-top-right-radius: 8px; transition: 0.3s; border: 1px solid transparent;
+            display: flex; align-items: center; gap: 5px;
+        }
+
+        .tab-active { background: white !important; color: var(--usa-verde-escuro) !important; border: 1px solid #dee2e6; border-bottom: 3px solid white; position: relative; top: 1px; }
+
+        .btn-nav { text-decoration: none; color: white; background: rgba(255, 255, 255, 0.1); padding: 6px 10px; border-radius: 4px; font-size: 9px; font-weight: bold; border: 1px solid rgba(178, 217, 105, 0.4); cursor: pointer; }
+        
+        /* BOTÃO LIMPAR */
+        .btn-limpar { background: var(--danger) !important; border: 1px solid rgba(255,255,255,0.2) !important; }
+        .btn-limpar:hover { background: #b71c1c !important; }
+
+        /* TABELA E CONTEÚDO */
+        .container { width: 98%; max-width: 1600px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        .actions-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .filter-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 150px;
+            gap: 15px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            align-items: end;
+            border: 1px solid #eee;
+        }
+
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label { font-size: 10px; font-weight: bold; color: var(--usa-verde-escuro); text-transform: uppercase; }
+        .filter-group input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        .btn-incluir { background-color: var(--usa-verde-escuro); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1100px; }
+        th { background: var(--usa-verde-escuro); color: white; padding: 12px 8px; text-align: left; position: sticky; top: 0; }
+        td { padding: 10px 8px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        tr:hover { background-color: #f5f5f5; }
+
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 10px; }
+        .prod { background: #e8f5e9; color: #2e7d32; }
+        .para { background: #ffebee; color: #c62828; }
+        
+        .col-obs { color: #666; font-style: italic; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* MODAL */
+        #modalEdicao { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 12px; width: 95%; max-width: 650px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .modal-header { background: var(--usa-verde-escuro); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center;}
+        .modal-body { padding: 20px 25px; max-height: 75vh; overflow-y: auto; }
+        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .full-width { grid-column: span 2; }
+        
+        label { display: block; font-size: 10px; font-weight: bold; color: #666; margin-bottom: 4px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; box-sizing: border-box; }
+        textarea { resize: vertical; min-height: 60px; font-family: inherit; }
+
+        .modal-footer { background: #f8f9fa; padding: 15px 25px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #eee; }
+        .btn-save { background: var(--usa-verde-medio); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-next { background: var(--usa-laranja); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-cancel { background: #e0e0e0; color: #666; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header class="header-main">
+        <div style="display: flex; gap: 8px;">
+            <button class="btn-nav" onclick="exportarBackup()">📤 EXPORTAR</button>
+            <button class="btn-nav" onclick="document.getElementById('fileImport').click()">📥 IMPORTAR</button>
+            <button class="btn-nav btn-limpar" onclick="limparBancoDados()">🗑️ LIMPAR</button>
+            <input type="file" id="fileImport" style="display:none" accept=".json, .csv" onchange="importarArquivo(event)">
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 14px; font-weight: 800;">SISTEMA INTEGRADO DE LOGÍSTICA</div>
+            <div style="font-size: 10px; color: var(--usa-verde-claro);">USINA SANTA ADÉLIA</div>
+        </div>
+        <button class="btn-nav" style="background: #1b5e20" onclick="exportarCSV()">📊 EXCEL</button>
+    </header>
+
+    <nav class="nav-tabs">
+        <a href="Gestor de Cores.html" class="tab-item">🎨 Gestor de Cores</a>
+        <a href="Banco_dados_PPT.html" class="tab-item tab-active">📝 Banco de Dados</a>
+        <a href="Localizacao_Frota.html" class="tab-item">🚜 Localização Frota</a>
+        <a href="Monitoramento_Chuva.html" class="tab-item">🌧️ Chuva</a>
+        <a href="Resumo_PPT.html" class="tab-item">📈 Resumo PPT</a>
+        <a href="Pasta_viva.html" class="tab-item">📂 Pasta Viva</a>
+        <a href="Cadastros.html" class="tab-item">⚙️ Cadastros</a>
+        <a href="Graficos_Herbicida.html" class="tab-item">📊 Graficos</a>
+    </nav>
+
+    <div class="container">
+        <div class="actions-bar">
+            <h2 style="color: var(--usa-verde-escuro); margin: 0; font-size: 18px;">Registro de Campo</h2>
+            <button class="btn-incluir" onclick="abrirModalInclusao()">+ NOVO LANÇAMENTO</button>
+        </div>
+
+        <div class="filter-container">
+            <div class="filter-group">
+                <label>Filtrar por Data</label>
+                <input type="text" id="fData" placeholder="Ex: 08/05/2026" onkeyup="filtrarTabela()">
+            </div>
+            <div class="filter-group">
+                <label>Filtrar por Equipamento</label>
+                <input type="text" id="fEq" placeholder="Ex: 210339" onkeyup="filtrarTabela()">
+            </div>
+            <div class="filter-group">
+                <label>Total</label>
+                <div id="contador" style="font-weight: bold; font-size: 14px; color: #1565c0; padding: 7px 0;">0 registros</div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="tabelaDados">
+                <thead>
+                    <tr>
+                        <th>DATA</th>
+                        <th>HORA</th>
+                        <th>EQ</th>
+                        <th>PROCESSO</th>
+                        <th>OPERAÇÃO</th>
+                        <th>FAZENDA</th>
+                        <th>STATUS</th>
+                        <th>MOTIVO</th>
+                        <th>OBSERVAÇÃO</th> 
+                        <th>QTD</th>
+                        <th style="text-align:center">AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabela"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="modalEdicao">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitulo" style="margin:0">Novo Apontamento</h3>
+                <span onclick="fecharModal()" style="cursor:pointer; font-size: 24px;">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editIndex">
+                <div class="modal-grid">
+                    <div><label>Data*</label><input type="text" id="editData" onchange="atualizarHorasDisponiveis()"></div>
+                    <div><label>Equipamento*</label><input type="text" id="editEq" onkeyup="this.value = this.value.toUpperCase()" onblur="buscarUltimasInfos()"></div>
+                    <div class="full-width"><label>Hora*</label><select id="editHora"></select></div>
+                    <div class="full-width"><label>Fazenda*</label><input type="text" id="editFaz" onkeyup="this.value = this.value.toUpperCase()"></div>
+                    <div class="full-width"><label>Processo*</label><select id="editProc" onchange="atualizarOperacoesModal()"></select></div>
+                    <div class="full-width"><label>Operação*</label><select id="editOper" onchange="ajustarStepQuantidade()"></select></div>
+                    <div><label>Status*</label><select id="editStatus" onchange="sugerirMotivoPorStatus()"><option value="PRODUTIVO">PRODUTIVO</option><option value="PARADO">PARADO</option></select></div>
+                    <div><label>Quantidade*</label><input type="number" id="editQtd" step="0.1"></div>
+                    <div class="full-width"><label>Motivo</label><select id="editMotivo"></select></div>
+                    <div class="full-width"><label>Observação</label><textarea id="editObs" placeholder="Digite detalhes aqui..."></textarea></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="fecharModal()">CANCELAR</button>
+                <button class="btn-next" id="btnSalvarProximo" onclick="salvarRegistro(true)">SALVAR E PRÓXIMO</button>
+                <button class="btn-save" onclick="salvarRegistro(false)">SALVAR</button>
+            </div>
+        </div>
+    </div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBrII6e6J6CmcOgsPxq4UWnj9dVf3fY_dw",
+      authDomain: "base-producao-ppt.firebaseapp.com",
+      projectId: "base-producao-ppt",
+      storageBucket: "base-producao-ppt.firebasestorage.app",
+      messagingSenderId: "651044736107",
+      appId: "1:651044736107:web:db202cb04a0c5e23c7352e",
+      measurementId: "G-HS3RMY3SSX"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const horasTurno = ["05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","00","01","02","03","04"];
+    
+    let config = {
+        processos: ["PLANTIO CANA", "HERBICIDA", "PREPARO DE SOLO", "ADUBAÇÃO/DESENLEIRADOR", "VINHAÇA ASPERSÃO", "VINHAÇA LOCALIZADA"],
+        operacoes: {
+            "PLANTIO CANA": ["COBRIR MUDA", "PLANTIO MECANIZADO", "RESSULCAR", "SULCAR E ADUBAR", "PLANTAR TORTA"],
+            "ADUBAÇÃO/DESENLEIRADOR": ["ADUBAÇÃO SUPERFICIAL", "APLICAR CALCARIO", "APLICAR GESSO", "ENLEIRAR PALHA"],
+            "PREPARO DE SOLO": ["1ª GRADAGEM ARADORA", "SUBSOLAR", "ARAR", "ESCARIFICAR SOLO"],
+            "HERBICIDA": ["1ª DESSECAÇÃO", "APLICAR DE HERBICIDA PPI", "CONTROLAR FORMIGA - MEC."],
+            "VINHAÇA ASPERSÃO": ["1 APLICACAO VINHACA", "1 APLICACAO AGUA RESID"],
+            "VINHAÇA LOCALIZADA": ["1 FERTIRRIGACAO MICRO", "1 FERTIRRIGACAO MACRO"]
+        },
+        motivos: ["PRODUTINDO", "ABAST. / LUBRIFICACAO", "MANUTENCAO MEC.", "REFEICAO/CAFE", "TROCA DE TURNO", "SOLO UMIDO - CHUVA"]
+    };
+    
+    let dadosGlobal = [];
+
+    // Escuta alterações de config em tempo real
+    db.collection('app_data').doc('config').onSnapshot((doc) => {
+        if (doc.exists) {
+            config = doc.data();
+        } else {
+            db.collection('app_data').doc('config').set(config);
+        }
+    });
+
+    // Escuta alterações de dados em tempo real
+    db.collection('app_data').doc('dados').onSnapshot((doc) => {
+        dadosGlobal = doc.exists ? (doc.data().list || []) : [];
+        carregarDados();
+    });
+
+    function carregarDados() {
+        const corpo = document.getElementById('corpoTabela');
+        corpo.innerHTML = "";
+        
+        [...dadosGlobal].reverse().forEach((item, index) => {
+            const origIdx = dadosGlobal.length - 1 - index;
+            corpo.innerHTML += `
+                <tr>
+                    <td>${item.data}</td>
+                    <td>${item.hora}:00h</td>
+                    <td>${item.eq}</td>
+                    <td>${item.proc}</td>
+                    <td>${item.oper}</td>
+                    <td>${item.faz}</td>
+                    <td><span class="status-badge ${item.status === 'PRODUTIVO' ? 'prod' : 'para'}">${item.status}</span></td>
+                    <td>${item.motivo}</td>
+                    <td class="col-obs" title="${item.obs || ''}">${item.obs || '-'}</td>
+                    <td>${item.qtd}</td>
+                    <td style="text-align:center">
+                        <span onclick="abrirModalEdicao(${origIdx})" style="cursor:pointer; margin-right: 10px;">📝</span>
+                        <span onclick="removerRegistro(${origIdx})" style="cursor:pointer;">🗑️</span>
+                    </td>
+                </tr>`;
+        });
+        filtrarTabela();
+    }
+
+    function limparBancoDados() {
+        if(confirm("⚠️ ATENÇÃO: Isso excluirá TODOS os registros permanentemente!\n\nDeseja continuar?")) {
+            if(confirm("Confirmação Final: Tem certeza que deseja limpar tudo?")) {
+                db.collection('app_data').doc('dados').set({ list: [] }).then(() => {
+                    alert("Banco de dados limpo!");
+                });
+            }
+        }
+    }
+
+    function importarArquivo(event) {
+        const arquivo = event.target.files[0];
+        if (!arquivo) return;
+
+        const reader = new FileReader();
+        const extensao = arquivo.name.split('.').pop().toLowerCase();
+
+        reader.onload = (e) => {
+            try {
+                if (extensao === 'json') {
+                    const data = JSON.parse(e.target.result);
+                    const dadosParaImportar = data.storage || data;
+                    db.collection('app_data').doc('dados').set({ list: dadosParaImportar });
+                    if(data.config) db.collection('app_data').doc('config').set(data.config);
+                } 
+                else if (extensao === 'csv') {
+                    const texto = e.target.result;
+                    const linhas = texto.split('\n');
+                    const novosDados = [];
+
+                    for (let i = 1; i < linhas.length; i++) {
+                        if (linhas[i].trim() === "") continue;
+                        const colunas = linhas[i].split(';');
+                        if (colunas.length >= 9) {
+                            novosDados.push({
+                                data: colunas[0].trim(),
+                                hora: colunas[1].trim().replace(':00h', ''),
+                                eq: colunas[2].trim().toUpperCase(),
+                                proc: colunas[3].trim(),
+                                oper: colunas[4].trim(),
+                                faz: colunas[5].trim().toUpperCase(),
+                                status: colunas[6].trim().toUpperCase(),
+                                motivo: colunas[7].trim(),
+                                qtd: parseFloat(colunas[8].trim().replace(',', '.')) || 0,
+                                obs: colunas[9] ? colunas[9].trim() : ""
+                            });
+                        }
+                    }
+                    
+                    if (confirm(`Detectados ${novosDados.length} registros. Deseja ADICIONAR aos dados atuais?\n(Cancelar irá SUBSTITUIR tudo)`)) {
+                        const atualizados = dadosGlobal.concat(novosDados);
+                        db.collection('app_data').doc('dados').set({ list: atualizados });
+                    } else {
+                        db.collection('app_data').doc('dados').set({ list: novosDados });
+                    }
+                }
+                alert("Importação concluída!");
+            } catch (err) {
+                alert("Erro ao importar. Verifique o formato do arquivo.");
+            }
+        };
+        reader.readAsText(arquivo, 'UTF-8');
+    }
+
+    function sugerirMotivoPorStatus() {
+        const status = document.getElementById('editStatus').value;
+        const motivoSel = document.getElementById('editMotivo');
+        if (status === "PRODUTIVO") motivoSel.value = "PRODUTINDO";
+        else if (motivoSel.value === "PRODUTINDO") motivoSel.value = config.motivos[1];
+    }
+
+    function buscarUltimasInfos() {
+        const eqDigitado = document.getElementById('editEq').value.toUpperCase();
+        if (!eqDigitado) return;
+        const ultimoRegistro = [...dadosGlobal].reverse().find(reg => reg.eq === eqDigitado);
+        if (ultimoRegistro && document.getElementById('editIndex').value === "novo") {
+            document.getElementById('editFaz').value = ultimoRegistro.faz;
+            document.getElementById('editProc').value = ultimoRegistro.proc;
+            atualizarOperacoesModal(ultimoRegistro.oper);
+            document.getElementById('editStatus').value = ultimoRegistro.status;
+            document.getElementById('editMotivo').value = ultimoRegistro.motivo;
+        }
+        atualizarHorasDisponiveis();
+    }
+
+    function atualizarHorasDisponiveis(horaEdicao = null) {
+        const data = document.getElementById('editData').value;
+        const eq = document.getElementById('editEq').value.toUpperCase();
+        const sel = document.getElementById('editHora');
+        const idx = document.getElementById('editIndex').value;
+        const ocupadas = dadosGlobal.filter((r, i) => r.data === data && r.eq === eq && i != idx).map(r => r.hora);
+        sel.innerHTML = "";
+        horasTurno.forEach(h => {
+            if (!ocupadas.includes(h)) sel.innerHTML += `<option value="${h}">${h}:00h</option>`;
+        });
+        if (horaEdicao) sel.value = horaEdicao;
+    }
+
+    function salvarRegistro(proximo = false) {
+        const idx = document.getElementById('editIndex').value;
+        const processoSelecionado = document.getElementById('editProc').value;
+        let quantidadeInput = parseFloat(document.getElementById('editQtd').value) || 0;
+
+        if (processoSelecionado === "VINHAÇA ASPERSÃO") {
+            quantidadeInput = quantidadeInput / 100;
+        }
+
+        const obj = {
+            data: document.getElementById('editData').value,
+            hora: document.getElementById('editHora').value,
+            eq: document.getElementById('editEq').value.toUpperCase(),
+            proc: processoSelecionado,
+            oper: document.getElementById('editOper').value,
+            faz: document.getElementById('editFaz').value.toUpperCase(),
+            status: document.getElementById('editStatus').value,
+            motivo: document.getElementById('editMotivo').value,
+            qtd: quantidadeInput,
+            obs: document.getElementById('editObs').value 
+        };
+        
+        if(!obj.data || !obj.eq || !obj.hora) return alert("Preencha todos os campos obrigatórios!");
+        
+        let novosDados = [...dadosGlobal];
+        if(idx === "novo") novosDados.push(obj); else novosDados[idx] = obj;
+        
+        db.collection('app_data').doc('dados').set({ list: novosDados }).then(() => {
+            if (proximo) {
+                const horaAtualIdx = horasTurno.indexOf(obj.hora);
+                const proximaHora = horasTurno[horaAtualIdx + 1];
+                if (proximaHora) {
+                    document.getElementById('editIndex').value = "novo";
+                    atualizarHorasDisponiveis();
+                    document.getElementById('editHora').value = proximaHora;
+                    document.getElementById('editQtd').value = "";
+                    document.getElementById('editObs').value = "";
+                } else {
+                    alert("Fim do turno!");
+                    fecharModal();
+                }
+            } else {
+                fecharModal();
+            }
+        });
+    }
+
+    function prepararModal() {
+        const pSel = document.getElementById('editProc'); pSel.innerHTML = "";
+        config.processos.forEach(p => pSel.innerHTML += `<option value="${p}">${p}</option>`);
+        const mSel = document.getElementById('editMotivo'); mSel.innerHTML = "";
+        config.motivos.forEach(m => mSel.innerHTML += `<option value="${m}">${m}</option>`);
+    }
+
+    function abrirModalInclusao() {
+        document.getElementById('modalTitulo').innerText = "Novo Lançamento";
+        document.getElementById('editIndex').value = "novo";
+        document.getElementById('btnSalvarProximo').style.display = "block";
+        prepararModal();
+        document.getElementById('editData').value = new Date().toLocaleDateString('pt-BR');
+        document.getElementById('editEq').value = "";
+        document.getElementById('editFaz').value = "";
+        document.getElementById('editQtd').value = "";
+        document.getElementById('editObs').value = "";
+        document.getElementById('editStatus').value = "PRODUTIVO";
+        document.getElementById('editMotivo').value = "PRODUTINDO";
+        atualizarHorasDisponiveis();
+        atualizarOperacoesModal();
+        document.getElementById('modalEdicao').style.display = 'flex';
+    }
+
+    function abrirModalEdicao(index) {
+        const item = dadosGlobal[index];
+        document.getElementById('modalTitulo').innerText = "Editar Registro";
+        document.getElementById('editIndex').value = index;
+        document.getElementById('btnSalvarProximo').style.display = "none";
+        prepararModal();
+        document.getElementById('editData').value = item.data;
+        document.getElementById('editEq').value = item.eq;
+        document.getElementById('editFaz').value = item.faz;
+        document.getElementById('editProc').value = item.proc;
+        atualizarOperacoesModal(item.oper);
+        document.getElementById('editStatus').value = item.status;
+        document.getElementById('editQtd').value = item.qtd;
+        document.getElementById('editMotivo').value = item.motivo;
+        document.getElementById('editObs').value = item.obs || "";
+        atualizarHorasDisponiveis(item.hora);
+        document.getElementById('modalEdicao').style.display = 'flex';
+    }
+
+    function ajustarStepQuantidade() {
+        const proc = document.getElementById('editProc').value;
+        const oper = document.getElementById('editOper').value;
+        const inputQtd = document.getElementById('editQtd');
+
+        if ((proc === "IRRIGAÇÃO LINHA MÃE" || proc === "Linha Mãe") && oper === "IRRIGAR") {
+            inputQtd.step = "0.01";
+        } else {
+            inputQtd.step = "0.1";
+        }
+    }
+
+    function atualizarOperacoesModal(sel = null) {
+        const p = document.getElementById('editProc').value;
+        const oSel = document.getElementById('editOper'); oSel.innerHTML = "";
+        (config.operacoes[p] || []).forEach(op => oSel.innerHTML += `<option value="${op}">${op}</option>`);
+        if(sel) oSel.value = sel;
+        ajustarStepQuantidade();
+    }
+
+    function filtrarTabela() {
+        const d = document.getElementById('fData').value.toLowerCase();
+        const e = document.getElementById('fEq').value.toLowerCase();
+        let cont = 0;
+        document.querySelectorAll("#corpoTabela tr").forEach(row => {
+            const m = row.cells[0].innerText.toLowerCase().includes(d) && row.cells[2].innerText.toLowerCase().includes(e);
+            row.style.display = m ? "" : "none"; if(m) cont++;
+        });
+        document.getElementById('contador').innerText = `${cont} registros`;
+    }
+
+    function fecharModal() { document.getElementById('modalEdicao').style.display = 'none'; }
+    function removerRegistro(i) { if(confirm("Excluir?")) { let novosDados = [...dadosGlobal]; novosDados.splice(i,1); db.collection('app_data').doc('dados').set({ list: novosDados }); } }
+    
+    function exportarCSV() {
+        let csv = "\ufeffData;Hora;Equipamento;Processo;Operação;Fazenda;Status;Motivo;Qtd;Observação\n";
+        dadosGlobal.forEach(i => csv += `${i.data};${i.hora}:00h;${i.eq};${i.proc};${i.oper};${i.faz};${i.status};${i.motivo};${i.qtd};${i.obs || ""}\n`);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "Logistica_USA.csv"; link.click();
+    }
+
+    function exportarBackup() {
+        const backup = { storage: dadosGlobal, config: config };
+        const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' });
+        const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "BACKUP_USA.json"; link.click();
+    }
+
+    carregarDados();
+</script>
+</body>
+</html>

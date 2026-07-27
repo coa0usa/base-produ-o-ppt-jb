@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA INTEGRADO USA - DASHBOARD</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            /* Fallbacks padrão - Serão sobrescritos pelo Gestor de Cores */
+            --usa-verde-escuro: #004A2F;
+            --usa-verde-medio: #2D7A4C;
+            --usa-verde-claro: #B2D969;
+            --usa-laranja: #ff9800;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f0f2f5; padding-top: 60px; padding-bottom: 60px; }
+
+        .header-dash {
+            background: linear-gradient(135deg, var(--usa-verde-escuro) 0%, #00633f 100%);
+            color: white; padding: 0 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            position: fixed; top: 0; width: 100%; z-index: 1000; height: 50px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2); box-sizing: border-box;
+        }
+
+        .btn-nav { 
+            text-decoration: none; color: white; border: 1px solid rgba(255,255,255,0.3); 
+            padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold;
+            background: rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s;
+        }
+        .btn-nav:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .container { width: 98%; margin: 0 auto; }
+
+        .secao-titulo {
+            background: var(--usa-verde-escuro); color: white;
+            padding: 6px 12px; border-radius: 8px; font-weight: 800;
+            font-size: 13px; margin: 15px 0 8px 0; display: flex; align-items: center; gap: 8px;
+        }
+
+        .sub-header-info {
+            text-align: center; background: #fff; padding: 10px; border-radius: 12px;
+            margin-bottom: 10px; border: 1px solid #ddd; border-left: 8px solid var(--usa-verde-claro);
+            display: flex; justify-content: center; align-items: center; gap: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .select-processo {
+            font-size: 18px; font-weight: 900; color: var(--usa-verde-escuro);
+            border: 2px solid var(--usa-verde-medio); border-radius: 8px;
+            padding: 5px 15px; cursor: pointer; outline: none;
+            background: #fff; text-transform: uppercase;
+        }
+
+        .legenda-container {
+            background: white; margin: 5px 0 15px 0; padding: 10px; border-radius: 12px;
+            display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .legenda-item { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 800; color: #333; }
+        .legenda-cor { width: 12px; height: 12px; border-radius: 2px; border: 1px solid #ddd; }
+
+        .grid-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card-chart { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 6px 15px rgba(0,0,0,0.06); border: 1px solid #eef; }
+        
+        .area-resumo { display: grid; grid-template-columns: 380px 1fr; gap: 15px; }
+        .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .card-mini { background: white; padding: 10px; border-radius: 10px; text-align: center; border-bottom: 3px solid var(--usa-verde-medio); display: flex; flex-direction: column; justify-content: flex-start; min-height: 85px; overflow-y: auto; }
+        .card-mini h4 { margin: 0 0 5px 0; font-size: 11px; color: #666; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 3px; position: sticky; top: 0; background: white; }
+        .card-mini .valor { font-size: 17px; font-weight: 900; color: var(--usa-verde-escuro); line-height: 1.1; }
+        .card-mini .sub-valor { font-size: 9px; color: var(--usa-laranja); font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+        .total-destaque { margin-top: 5px; padding-top: 5px; border-top: 2px dashed var(--usa-verde-claro); color: #000 !important; }
+
+        .tabela-box { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+        th { background: #f8f9fa; padding: 10px; text-align: left; border-bottom: 2px solid #eee; }
+        td { padding: 8px 10px; border-bottom: 1px solid #f1f1f1; }
+        .linha-especial { background-color: #f0f7f4; border-left: 4px solid var(--usa-verde-medio); }
+
+        .timeline { display: flex; height: 18px; border-radius: 4px; overflow: hidden; border: 1px solid #ccc; margin-top: 12px; }
+        .fatia { flex: 1; height: 100%; border-right: 0.5px solid rgba(0,0,0,0.1); }
+        .labels-hora { display: flex; justify-content: space-between; margin-top: 4px; }
+        .labels-hora span { flex: 1; text-align: center; font-size: 8px; color: #444; font-weight: bold; }
+
+        .box-obs { margin-top: 10px; padding: 8px; background: #fff8e1; border-radius: 6px; border-left: 3px solid #ffc107; font-size: 10px; color: #555; }
+        .obs-item { margin-bottom: 3px; border-bottom: 1px dashed #ddd; padding-bottom: 2px; }
+
+        .footer-filter {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.95);
+            border-top: 1px solid #ddd; padding: 6px;
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .input-data-compacto {
+            padding: 4px 8px; border-radius: 5px; border: 1px solid var(--usa-verde-medio);
+            font-size: 12px; font-weight: bold; color: var(--usa-verde-escuro);
+            outline: none; width: 130px; text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<header class="header-dash">
+    <div style="display:flex; gap:8px;">
+        <a href="Painel.html" class="btn-nav">❮ VOLTAR</a>
+        <button onclick="copiarRelatorio()" id="btnZap" class="btn-nav" style="background: #25d366; border: none;">📸 COPIAR PRINT</button>
+    </div>
+    <b style="font-size: 16px;">MONITORAMENTO OPERACIONAL - USA</b>
+    <span id="data-txt" style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 15px; font-weight: bold;"></span>
+</header>
+
+<main class="container" id="area-print">
+    <div class="sub-header-info">
+        <span style="font-size: 16px; font-weight: 900; color: var(--usa-verde-escuro);">⚙️ PROCESSO:</span>
+        <select id="select-proc" class="select-processo" onchange="carregarDados()">
+            <option value="PLANTIO MECANIZADO" selected>🌱🚜 PLANTIO MECANIZADO</option>
+            <option value="PLANTIO MEIOSE">🌱 PLANTIO MEIOSE</option>
+            <option value="PLANTIO TORTA">🟫 PLANTIO TORTA</option>
+            <option value="PREPARO DE SOLO">🚜 PREPARO DE SOLO</option>
+            <option value="ADUBAÇÃO">🧪 ADUBAÇÃO</option>
+            <option value="HERBICIDA">🌿 HERBICIDA</option>
+            <option value="VINHAÇA ASPERSÃO">💧 VINHAÇA ASPERSÃO</option>
+            <option value="VINHAÇA LOCALIZADA">📍 VINHAÇA LOCALIZADA</option>        
+            <option value="Linha Mãe">🛰️ LINHA MÃE</option>
+            <option value="Solix">🤖 SOLIX</option>
+            <option value="Adubação/desenLeirador">⚙️ ADUBAÇÃO/DESENLEIRADOR</option>
+        </select>
+    </div>
+
+    <div class="secao-titulo">📊 RESUMO DETALHADO POR OPERAÇÃO</div>
+    <div class="area-resumo">
+        <div class="cards-grid">
+            <div class="card-mini"><h4>TOTAL QTD</h4><div id="v_total" class="valor">0.0</div></div>
+            <div class="card-mini"><h4>EFICIÊNCIA</h4><div id="v_efici" class="valor">0%</div></div>
+            <div class="card-mini"><h4>REND/HORA</h4><div id="v_media_h" class="valor">0.0</div></div>
+            <div class="card-mini"><h4>REND/EQUIP</h4><div id="v_media_eq" class="valor">0.0</div></div>
+        </div>
+        <div class="tabela-box">
+            <table>
+                <thead><tr><th>FROTA</th><th>FAZENDA</th><th>OPERAÇÃO</th><th>TOTAL</th><th>REND.</th></tr></thead>
+                <tbody id="corpo_tab"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="secao-titulo">🚜 DESEMPENHO INDIVIDUALIZADO (FROTA)</div>
+    <div id="legenda_dinamica" class="legenda-container"></div>
+    <div class="grid-charts" id="grid_eq"></div>
+</main>
+
+<footer class="footer-filter">
+    <span style="font-size: 10px; font-weight: bold; color: #666; margin-right: 6px;">DATA:</span>
+    <input type="date" id="filtro-data" class="input-data-compacto" onchange="carregarDados()">
+</footer>
+
+<script>
+    Chart.register(ChartDataLabels);
+
+    const STORAGE_KEY = 'usa_v18_final';
+    const SESSION_STATE_KEY = 'usa_dashboard_last_state';
+    
+    // SINCRONIZADO: Chave correta do Gestor de Cores
+    const CORES_STORAGE_KEY = 'usa_v18_colors'; 
+
+    const horasArr = ["05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","00","01","02","03","04"];
+    let chartInstances = {};
+    let coresMotivos = {};
+
+    function aplicarCoresDoGestor() {
+        const coresSalvas = JSON.parse(localStorage.getItem(CORES_STORAGE_KEY)) || {};
+        
+        // 1. Atualiza Layout (CSS Variables)
+        const root = document.documentElement;
+        if(coresSalvas["GERAL_VERDE_ESCURO"]) root.style.setProperty('--usa-verde-escuro', coresSalvas["GERAL_VERDE_ESCURO"]);
+        if(coresSalvas["GERAL_VERDE_MEDIO"]) root.style.setProperty('--usa-verde-medio', coresSalvas["GERAL_VERDE_MEDIO"]);
+        if(coresSalvas["GERAL_VERDE_CLARO"]) root.style.setProperty('--usa-verde-claro', coresSalvas["GERAL_VERDE_CLARO"]);
+        if(coresSalvas["GERAL_LARANJA"]) root.style.setProperty('--usa-laranja', coresSalvas["GERAL_LARANJA"]);
+
+        // 2. Mapeia Motivos (Prioriza nomes exatos vindos do Gestor)
+        coresMotivos = { ...coresSalvas };
+
+        // Fallbacks para garantir que categorias básicas funcionem se não houver no gestor
+        const padrao = {
+            "PRODUTIVO": coresSalvas["MOTIVO_PRODUTIVO"] || coresSalvas["PRODUTIVO"] || "#2D7A4C",
+            "MANUTENÇÃO": coresSalvas["MOTIVO_MANUTENCAO"] || coresSalvas["MANUTENCAO"] || "#FF0000",
+            "CLIMA / SOLO": coresSalvas["MOTIVO_CLIMA"] || coresSalvas["CLIMA"] || "#0000FF",
+            "REFEIÇÃO": coresSalvas["MOTIVO_REFEICAO"] || coresSalvas["REFEICAO"] || "#FFFF00",
+            "MUDANÇA DE ÁREA": coresSalvas["MOTIVO_TROCA_AREA"] || coresSalvas["TROCA_AREA"] || "#FF69B4",
+            "ABASTECIMENTO": coresSalvas["MOTIVO_ABASTECIMENTO"] || coresSalvas["ABASTECIMENTO"] || "#FF9800",
+            "AGUARDANDO": coresSalvas["MOTIVO_AGUARDANDO"] || coresSalvas["AGUARDANDO"] || "#95A5A6",
+            "FALTA DE OPER / MOTORISTA": coresSalvas["MOTIVO_FALTA_OPER"] || coresSalvas["FALTA_OPER"] || "#8B4513",
+            "OUTROS": coresSalvas["MOTIVO_OUTROS"] || coresSalvas["OUTROS"] || "#34495E"
+        };
+        
+        coresMotivos = { ...padrao, ...coresMotivos };
+    }
+
+    function gerarCorAleatoria(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        let color = '#';
+        for (let i = 0; i < 3; i++) color += ('00' + ((hash >> (i * 8)) & 0xFF).toString(16)).substr(-2);
+        return color;
+    }
+
+    window.onload = () => {
+        aplicarCoresDoGestor();
+        const lastState = JSON.parse(localStorage.getItem(SESSION_STATE_KEY));
+        if (lastState) {
+            document.getElementById('filtro-data').value = lastState.data;
+            document.getElementById('select-proc').value = lastState.processo;
+        } else {
+            const hoje = new Date();
+            const offset = hoje.getTimezoneOffset();
+            const hojeLocal = new Date(hoje.getTime() - (offset * 60 * 1000));
+            document.getElementById('filtro-data').value = hojeLocal.toISOString().split('T')[0];
+        }
+        carregarDados();
+    };
+
+    function carregarDados() {
+        aplicarCoresDoGestor(); 
+
+        const dataInput = document.getElementById('filtro-data').value;
+        const processoSelecionado = document.getElementById('select-proc').value;
+        
+        localStorage.setItem(SESSION_STATE_KEY, JSON.stringify({
+            data: dataInput,
+            processo: processoSelecionado
+        }));
+
+        const db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const dataBase = dataInput.split('-').reverse().join('/');
+        
+        const dSeg = new Date(dataInput + "T12:00:00"); 
+        dSeg.setDate(dSeg.getDate() + 1);
+        const dataApos = dSeg.toISOString().split('T')[0].split('-').reverse().join('/');
+        
+        document.getElementById('data-txt').innerText = dataBase;
+
+        const dadosFiltrados = db.filter(i => {
+            const h = parseInt(i.hora);
+            const isHoje = (h >= 5 && i.data === dataBase);
+            const isAmanha = (h >= 0 && h <= 4 && i.data === dataApos);
+            return (i.proc.toLowerCase() === processoSelecionado.toLowerCase()) && (isHoje || isAmanha);
+        });
+
+        const tabelaRows = {};
+        const frotaCards = {};
+        const motivosNoDia = new Map();
+        const qtdPorOperacao = {}; 
+        let tGeral = 0, hP_Geral = 0;
+
+        dadosFiltrados.forEach(i => {
+            const v = parseFloat(i.qtd || 0); tGeral += v;
+            if(i.status === "PRODUTIVO") hP_Geral++;
+            
+            const faz = i.fazenda || i.faz || "N/A";
+            const oper = (i.oper || "N/A").toUpperCase();
+            let frota = (i.eq || "").toUpperCase();
+
+            if (frota === "TREMINHÃO II") frota = "TRETAMINHÃO";
+
+            if (v > 0 && oper !== "PARADO" && oper !== "OPERAÇÃO PARADA" && oper !== "N/A") {
+                if(!qtdPorOperacao[oper]) qtdPorOperacao[oper] = 0;
+                qtdPorOperacao[oper] += v;
+            }
+
+            const chaveTabela = `${frota}_${faz}_${oper}`;
+            if(!tabelaRows[chaveTabela]) tabelaRows[chaveTabela] = { frota, faz, oper, total: 0, hP: 0 };
+            tabelaRows[chaveTabela].total += v;
+            if(i.status === "PRODUTIVO") tabelaRows[chaveTabela].hP++;
+
+            if(!frotaCards[frota]) {
+                frotaCards[frota] = { id: frota, ultimaFazenda: "N/A", listaOps: new Set(), total: 0, hP: 0, ph: {}, sh: {}, obs: [] };
+                horasArr.forEach(h => { frotaCards[frota].ph[h] = 0; frotaCards[frota].sh[h] = "#f5f5f5"; });
+            }
+            
+            frotaCards[frota].total += v;
+            if (faz !== "N/A") frotaCards[frota].ultimaFazenda = faz;
+
+            if(i.status === "PRODUTIVO") {
+                frotaCards[frota].hP++;
+                if (oper !== "PARADO" && oper !== "OPERAÇÃO PARADA") frotaCards[frota].listaOps.add(oper);
+            }
+            frotaCards[frota].ph[i.hora] += v;
+            if(i.obs && i.obs.trim() !== "") frotaCards[frota].obs.push({ hora: i.hora, texto: i.obs });
+
+            let motOriginal = (i.motivo || "").toUpperCase().trim();
+            let status = (i.status || "").toUpperCase();
+            let key = motOriginal;
+
+            if (status === "PRODUTIVO") {
+                key = "PRODUTIVO";
+            } else {
+                // Tenta encontrar o nome exato no gestor primeiro
+                if (!coresMotivos[motOriginal]) {
+                    if (motOriginal.includes("MOTORISTA") || motOriginal.includes("OPERADOR") || motOriginal.includes("FALTA DE OPER")) key = "FALTA DE OPER / MOTORISTA";
+                    else if (motOriginal.includes("MECAN") || motOriginal.includes("MANUTEN") || motOriginal.includes("CONSERTO") || motOriginal.includes("OFICINA")) key = "MANUTENÇÃO";
+                    else if (motOriginal.includes("CLIMA") || motOriginal.includes("CHUVA") || motOriginal.includes("SOLO") || motOriginal.includes("UMIDADE")) key = "CLIMA / SOLO";
+                    else if (motOriginal.includes("ABASTEC")) key = "ABASTECIMENTO";
+                    else if (motOriginal.includes("REFEI") || motOriginal.includes("ALMO") || motOriginal.includes("JANTA") || motOriginal.includes("CAFE")) key = "REFEIÇÃO";
+                    else if (motOriginal.includes("DESLOC") || motOriginal.includes("TROCA") || motOriginal.includes("AREA") || motOriginal.includes("TALHAO") || motOriginal.includes("MUDANCA")) key = "MUDANÇA DE ÁREA";
+                    else if (motOriginal.includes("AGUARDA") || motOriginal.includes("ESPERA") || motOriginal.includes("PARADO") || motOriginal.includes("OCIOSO")) key = "AGUARDANDO";
+                    if (key === "" || key === "NULL") key = "OUTROS";
+                } else {
+                    key = motOriginal;
+                }
+            }
+
+            let corFinal = coresMotivos[key] || gerarCorAleatoria(key);
+            motivosNoDia.set(key, corFinal);
+            frotaCards[frota].sh[i.hora] = corFinal;
+        });
+
+        const vTotalDiv = document.getElementById('v_total');
+        let htmlTotal = "";
+        const listaOpsAtivas = Object.keys(qtdPorOperacao).filter(op => qtdPorOperacao[op] > 0);
+
+        if (listaOpsAtivas.length > 0) {
+            listaOpsAtivas.forEach(op => {
+                htmlTotal += `<div><span class="valor" style="font-size:15px;">${qtdPorOperacao[op].toFixed(1)}</span><div class="sub-valor">${op}</div></div>`;
+            });
+            htmlTotal += `<div class="total-destaque"><span class="valor">${tGeral.toFixed(1)}</span><div class="sub-valor" style="color:var(--usa-verde-escuro);">TOTAL GERAL</div></div>`;
+            vTotalDiv.innerHTML = htmlTotal;
+        } else {
+            vTotalDiv.innerText = tGeral.toFixed(1);
+        }
+
+        const tbody = document.getElementById('corpo_tab');
+        tbody.innerHTML = "";
+        Object.keys(tabelaRows).sort().forEach(chave => {
+            const r = tabelaRows[chave];
+            if (r.total <= 0) return;
+            const rend = (r.total / (r.hP || 1)).toFixed(1);
+            const classeEspecial = (r.frota.includes("TRETAMINHÃO") || r.frota.includes("PENTAMINHÃO")) ? 'linha-especial' : '';
+            tbody.innerHTML += `<tr class="${classeEspecial}"><td><b>${r.frota}</b></td><td>${r.faz}</td><td style="color:#ce7200; font-weight:bold;">${r.oper}</td><td>${r.total.toFixed(1)}</td><td style="color:var(--usa-verde-medio); font-weight:bold;">${rend}</td></tr>`;
+        });
+
+        const legendaDiv = document.getElementById('legenda_dinamica');
+        legendaDiv.innerHTML = "";
+        const motivosOrdenados = Array.from(motivosNoDia).sort((a, b) => a[0] === "PRODUTIVO" ? -1 : 1);
+        motivosOrdenados.forEach(([nome, cor]) => {
+            legendaDiv.innerHTML += `<div class="legenda-item"><div class="legenda-cor" style="background:${cor}"></div><span>${nome}</span></div>`;
+        });
+
+        const grid = document.getElementById('grid_eq');
+        grid.innerHTML = "";
+        Object.keys(frotaCards).sort().forEach(id => {
+            const f = frotaCards[id];
+            const card = document.createElement('div');
+            card.className = 'card-chart';
+            let tl = '<div class="timeline">';
+            horasArr.forEach(h => tl += `<div class="fatia" style="background:${f.sh[h]}" title="${h}h"></div>`);
+            tl += '</div><div class="labels-hora">';
+            horasArr.forEach(h => tl += `<span>${h}</span>`);
+            tl += '</div>';
+
+            let htmlObs = "";
+            if(f.obs.length > 0) {
+                htmlObs = `<div class="box-obs"><b>📝 OBSERVAÇÕES:</b>`;
+                f.obs.forEach(o => htmlObs += `<div class="obs-item"><b>${o.hora}h:</b> ${o.texto}</div>`);
+                htmlObs += `</div>`;
+            }
+
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:8px;">
+                    <div><b style="font-size:18px; color:var(--usa-verde-escuro);">${id}</b><br><small style="color:#666; font-weight:bold; font-size:9px;"> FAZENDA: ${f.ultimaFazenda}</small></div>
+                    <div style="text-align:right;"><b style="font-size:18px; color:var(--usa-verde-medio);">${f.total.toFixed(1)}</b><br><small style="color:var(--usa-laranja); font-weight:bold; font-size:9px;">${Array.from(f.listaOps).join(" + ") || 'PARADO'}</small></div>
+                </div>
+                <div style="height:120px; position:relative;"><canvas id="chart-${id}"></canvas></div>
+                ${tl}${htmlObs}`;
+            grid.appendChild(card);
+            renderizarGrafico(id, f.ph);
+        });
+
+        document.getElementById('v_efici').innerText = ((hP_Geral / (dadosFiltrados.length || 1)) * 100).toFixed(0) + "%";
+        document.getElementById('v_media_h').innerText = (tGeral / (hP_Geral || 1)).toFixed(1);
+        document.getElementById('v_media_eq').innerText = (tGeral / (Object.keys(frotaCards).length || 1)).toFixed(1);
+    }
+
+    function renderizarGrafico(id, dadosHora) {
+        const canvas = document.getElementById(`chart-${id}`);
+        if(!canvas) return;
+        if (chartInstances[id]) chartInstances[id].destroy();
+        const ctx = canvas.getContext('2d');
+        const grad = ctx.createLinearGradient(0, 0, 0, 120);
+        
+        const corVerdeMedio = getComputedStyle(document.documentElement).getPropertyValue('--usa-verde-medio').trim() || "#2D7A4C";
+        const corVerdeEscuro = getComputedStyle(document.documentElement).getPropertyValue('--usa-verde-escuro').trim() || "#004A2F";
+
+        grad.addColorStop(0, corVerdeMedio + '66'); 
+        grad.addColorStop(1, corVerdeMedio + '00');
+        
+        chartInstances[id] = new Chart(ctx, {
+            type: 'line',
+            data: { 
+                labels: horasArr, 
+                datasets: [{ 
+                    data: horasArr.map(h => dadosHora[h]), 
+                    borderColor: corVerdeMedio, 
+                    borderWidth: 2, 
+                    backgroundColor: grad, 
+                    fill: true, 
+                    tension: 0.4, 
+                    pointRadius: 2 
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                animation: false,
+                layout: { padding: { top: 25, left: 10, right: 10, bottom: 5 } },
+                plugins: { 
+                    legend: { display: false }, 
+                    datalabels: { 
+                        display: true,
+                        align: 'top',
+                        anchor: 'end',
+                        formatter: (v) => v > 0 ? v.toFixed(1) : '', 
+                        font: { size: 10, weight: '900' }, 
+                        color: corVerdeEscuro,
+                        clip: false
+                    } 
+                }, 
+                scales: { 
+                    y: { 
+                        display: false, 
+                        beginAtZero: true,
+                        suggestedMax: function(context) {
+                            const max = Math.max(...context.chart.data.datasets[0].data);
+                            return max === 0 ? 5 : max * 1.4;
+                        }
+                    }, 
+                    x: { display: false } 
+                } 
+            }
+        });
+    }
+
+    async function copiarRelatorio() {
+        const btn = document.getElementById('btnZap');
+        if (btn.disabled) return;
+        const originalText = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = "⌛ GERANDO...";
+        try {
+            const canvas = await html2canvas(document.getElementById("area-print"), { 
+                backgroundColor: "#f0f2f5", 
+                scale: 2,
+                logging: false,
+                useCORS: true
+            });
+            canvas.toBlob(async (blob) => {
+                if (!blob) return;
+                const data = [new ClipboardItem({ [blob.type]: blob })];
+                await navigator.clipboard.write(data);
+                btn.innerText = "✅ COPIADO!";
+                setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 1500);
+            });
+        } catch (err) {
+            console.error("Erro ao copiar:", err);
+            btn.innerText = "❌ ERRO";
+            btn.disabled = false;
+            setTimeout(() => { btn.innerText = originalText; }, 1500);
+        }
+    }
+</script>
+</body>
+</html>

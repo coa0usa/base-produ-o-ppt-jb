@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA INTEGRADO V18.5 - CADASTROS</title>
+    <style>
+        :root {
+            --usa-verde-escuro: #004A2F;
+            --usa-verde-medio: #2D7A4C;
+            --usa-verde-claro: #B2D969;
+            --usa-laranja: #ff9800;
+            --white: #ffffff;
+            --bg-gray: #f4f7f6;
+            --bg-tabs: #f8f9fa;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; background: var(--bg-gray); 
+            display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; padding-top: 125px; 
+        }
+
+        /* --- CABEÇALHO PRINCIPAL --- */
+        .header-main {
+            background-color: var(--usa-verde-escuro);
+            color: white; padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px; z-index: 1001; box-sizing: border-box;
+        }
+
+        .header-center { text-align: center; flex-grow: 1; }
+        .logo-text { font-size: 16px; font-weight: 800; letter-spacing: 1px; }
+        .sub-logo { font-size: 10px; color: var(--usa-verde-claro); font-weight: bold; }
+
+        .header-right { text-align: right; font-family: 'Courier New', monospace; min-width: 150px; }
+        #relogio-atual { font-size: 16px; font-weight: bold; color: var(--usa-verde-claro); }
+
+        /* --- NAVEGAÇÃO EM ABAS --- */
+        .tabs-container {
+            background-color: var(--bg-tabs);
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            padding: 0 20px;
+            border-bottom: 3px solid var(--usa-verde-claro);
+            position: fixed; top: 60px; left: 0;
+            z-index: 1000; overflow-x: auto;
+        }
+
+        .tab-item {
+            padding: 12px 18px;
+            text-decoration: none;
+            color: #555;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid transparent;
+            transition: 0.2s;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .tab-active {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-bottom: 3px solid white;
+            border-radius: 8px 8px 0 0;
+            color: var(--usa-verde-escuro);
+            position: relative;
+            top: 1px;
+        }
+
+        /* --- LAYOUT DO PAINEL DE CADASTRO --- */
+        .container-main {
+            width: 95%; max-width: 800px; padding-bottom: 40px;
+        }
+
+        .card { 
+            background: white; padding: 30px; border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            border-top: 6px solid var(--usa-laranja); box-sizing: border-box;
+        }
+
+        h3 { margin: 0 0 20px 0; color: var(--usa-verde-escuro); border-bottom: 2px solid var(--usa-verde-claro); padding-bottom: 8px; font-size: 18px; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 11px; font-weight: bold; margin-bottom: 5px; color: #444; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+        
+        .config-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-add { padding: 0 25px; background: var(--usa-verde-escuro); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-add:hover { background: var(--usa-verde-medio); }
+
+        .lista-itens { background: #f9f9f9; border-radius: 4px; border: 1px solid #eee; }
+        .item-row { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 13px; color: #333; }
+        .item-row:last-child { border-bottom: none; }
+        .btn-del { color: #cc0000; cursor: pointer; font-weight: bold; font-size: 14px; }
+        
+        .hidden-field { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- CABEÇALHO -->
+    <header class="header-main">
+        <div style="min-width:150px"></div>
+        <div class="header-center">
+            <div class="logo-text">USINA SANTA ADÉLIA</div>
+            <div class="sub-logo">COA - SISTEMA INTEGRADO V18.5</div>
+        </div>
+        <div class="header-right">
+            <div id="data-topo">--/--/----</div>
+            <div id="relogio-atual">00:00:00</div>
+        </div>
+    </header>
+
+    <!-- NAVEGAÇÃO POR ABAS -->
+    <nav class="tabs-container">
+        <a href="Gestor de Cores.html" class="tab-item">🎨 Gestor de Cores</a>
+        <a href="Banco_dados_PPT.html" class="tab-item">🗄️ Banco de Dados</a>
+        <a href="Localizacao_Frota.html" class="tab-item">🚜 LOCALIZAÇÃO FROTA</a>
+        <a href="Monitoramento_Chuva.html" class="tab-item">☔ CHUVA</a>
+        <a href="Resumo_PPT.html" class="tab-item">📈 RESUMO PPT</a>
+        <a href="Pasta_viva.html" class="tab-item">📂 PASTA VIVA</a>
+        <a href="Graficos_Herbicida.html" class="tab-item">📊 GRAFICOS</a>
+        <a href="#" class="tab-item tab-active">⚙️ CADASTROS</a>
+    </nav>
+
+    <main class="container-main">
+        <section class="card">
+            <h3>Gerenciamento de Cadastros</h3>
+            
+            <div class="form-group">
+                <label>Tipo de Item</label>
+                <select id="tipo_cadastro" onchange="renderizarLista()">
+                    <option value="processos">PROCESSO PRINCIPAL</option>
+                    <option value="operacoes">OPERAÇÃO / OS (VINCULADA)</option>
+                    <option value="motivos">MOTIVO DA PARADA</option>
+                </select>
+            </div>
+
+            <div id="bloco_vinculo" class="form-group hidden-field">
+                <label>Vincular ao Processo:</label>
+                <select id="config_vinculo_processo" onchange="renderizarLista()"></select>
+            </div>
+
+            <div class="config-row">
+                <input type="text" id="novo_item_nome" placeholder="Digite o nome para cadastrar...">
+                <button class="btn-add" onclick="adicionarItem()">ADICIONAR</button>
+            </div>
+
+            <div id="lista_cadastrados" class="lista-itens">
+                <!-- Itens aparecem aqui -->
+            </div>
+        </section>
+    </main>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBrII6e6J6CmcOgsPxq4UWnj9dVf3fY_dw",
+      authDomain: "base-producao-ppt.firebaseapp.com",
+      projectId: "base-producao-ppt",
+      storageBucket: "base-producao-ppt.firebasestorage.app",
+      messagingSenderId: "651044736107",
+      appId: "1:651044736107:web:db202cb04a0c5e23c7352e",
+      measurementId: "G-HS3RMY3SSX"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    
+    // Configuração inicial padrão
+    let config = {
+        processos: ["PLANTIO CANA", "HERBICIDA", "PREPARO DE SOLO", "ADUBAÇÃO/DESENLEIRADOR", "VINHAÇA ASPERSÃO", "VINHAÇA LOCALIZADA"],
+        operacoes: {
+            "PLANTIO CANA": ["COBRIR MUDA", "PLANTIO MECANIZADO", "RESSULCAR", "SULCAR E ADUBAR", "PLANTIO TORTA"],
+            "ADUBAÇÃO/DESENLEIRADOR": ["ADUBAÇÃO SUPERFICIAL", "APLICAR CALCARIO", "APLICAR GESSO", "ENLEIRAR PALHA"],
+            "PREPARO DE SOLO": ["1ª GRADAGEM ARADORA", "SUBSOLAR", "ARAR", "ESCARIFICAR SOLO"],
+            "HERBICIDA": ["1ª DESSECAÇÃO", "APLICAR DE HERBICIDA PPI", "CONTROLAR FORMIGA - MEC."],
+            "VINHAÇA ASPERSÃO": ["1 APLICACAO VINHACA", "1 APLICACAO AGUA RESID"],
+            "VINHAÇA LOCALIZADA": ["1 FERTIRRIGACAO MICRO", "1 FERTIRRIGACAO MACRO"]
+        },
+        motivos: ["ABAST. / LUBRIFICACAO", "MANUTENCAO MEC.", "REFEICAO/CAFE", "TROCA DE TURNO", "SOLO UMIDO - CHUVA"]
+    };
+
+    function init() {
+        atualizarRelogio();
+        setInterval(atualizarRelogio, 1000);
+        
+        db.collection('app_data').doc('config').onSnapshot((doc) => {
+            if (doc.exists) {
+                config = doc.data();
+                // Força recriação das opções de processo no vínculo
+                const selVinculo = document.getElementById('config_vinculo_processo');
+                if (selVinculo) selVinculo.innerHTML = "";
+                renderizarLista();
+            } else {
+                db.collection('app_data').doc('config').set(config);
+            }
+        });
+    }
+
+    function atualizarRelogio() {
+        const agora = new Date();
+        document.getElementById('data-topo').textContent = agora.toLocaleDateString('pt-BR');
+        document.getElementById('relogio-atual').textContent = agora.toLocaleTimeString('pt-BR');
+    }
+
+    function renderizarLista() {
+        const tipo = document.getElementById('tipo_cadastro').value;
+        const listaDiv = document.getElementById('lista_cadastrados');
+        const blocoVinculo = document.getElementById('bloco_vinculo');
+        const selVinculo = document.getElementById('config_vinculo_processo');
+        
+        listaDiv.innerHTML = "";
+
+        if (tipo === 'operacoes') {
+            blocoVinculo.classList.remove('hidden-field');
+            
+            if(selVinculo.options.length === 0) {
+                (config.processos || []).forEach(p => { 
+                    selVinculo.innerHTML += `<option value="${p}">${p}</option>`; 
+                });
+            }
+
+            const procAlvo = selVinculo.value;
+            if(procAlvo && config.operacoes && config.operacoes[procAlvo]) {
+                config.operacoes[procAlvo].forEach((item, index) => {
+                    listaDiv.innerHTML += `
+                        <div class="item-row">
+                            <span>${item}</span> 
+                            <span class="btn-del" onclick="removerItem('${procAlvo}', ${index})">✖</span>
+                        </div>`;
+                });
+            }
+        } else {
+            blocoVinculo.classList.add('hidden-field');
+            const listaFonte = (tipo === 'processos') ? (config.processos || []) : (config.motivos || []);
+            listaFonte.forEach((item, index) => {
+                listaDiv.innerHTML += `
+                    <div class="item-row">
+                        <span>${item}</span> 
+                        <span class="btn-del" onclick="removerItem(null, ${index})">✖</span>
+                    </div>`;
+            });
+        }
+    }
+
+    function adicionarItem() {
+        const tipo = document.getElementById('tipo_cadastro').value;
+        const nome = document.getElementById('novo_item_nome').value.toUpperCase().trim();
+        
+        if(!nome) return alert("Digite um nome válido!");
+
+        if (!config.processos) config.processos = [];
+        if (!config.motivos) config.motivos = [];
+        if (!config.operacoes) config.operacoes = {};
+
+        if(tipo === 'processos') {
+            if(!config.processos.includes(nome)) {
+                config.processos.push(nome);
+                config.operacoes[nome] = [];
+            }
+        } else if (tipo === 'motivos') {
+            if(!config.motivos.includes(nome)) config.motivos.push(nome);
+        } else if (tipo === 'operacoes') {
+            const procAlvo = document.getElementById('config_vinculo_processo').value;
+            if(!config.operacoes[procAlvo]) config.operacoes[procAlvo] = [];
+            if(!config.operacoes[procAlvo].includes(nome)) {
+                config.operacoes[procAlvo].push(nome);
+            }
+        }
+
+        db.collection('app_data').doc('config').set(config).then(() => {
+            document.getElementById('novo_item_nome').value = "";
+            renderizarLista();
+        });
+    }
+
+    function removerItem(proc, index) {
+        if(!confirm("Deseja realmente excluir este item?")) return;
+
+        const tipo = document.getElementById('tipo_cadastro').value;
+
+        if(tipo === 'processos') {
+            const pRemovido = config.processos[index];
+            config.processos.splice(index, 1);
+            if (config.operacoes) delete config.operacoes[pRemovido];
+            document.getElementById('config_vinculo_processo').innerHTML = ""; 
+        } else if(tipo === 'motivos') {
+            config.motivos.splice(index, 1);
+        } else {
+            config.operacoes[proc].splice(index, 1);
+        }
+
+        db.collection('app_data').doc('config').set(config).then(() => {
+            renderizarLista();
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>
