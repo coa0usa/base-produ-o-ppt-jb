@@ -1,0 +1,105 @@
+/* =====================================================================
+   MONITORAMENTO DE CHUVA — estilos específicos (base em usa-base.css)
+   ===================================================================== */
+:root {
+    --azul: #1d64b0;
+    --azul-bg: #e8f1fb;
+    --azul-borda: #b7d0ee;
+}
+
+.relatorio { max-width: 1180px; }
+
+.rel-cab {
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+.rel-cab h2 { margin: 0; font-size: 18px; font-weight: 700; }
+.rel-cab .meta { margin-top: 2px; font-size: 12px; color: var(--texto-suave); }
+
+.status-dia.chuva { background: var(--azul-bg); border-color: var(--azul-borda); }
+.status-dia.chuva .icone { background: var(--azul); }
+.status-dia.chuva strong { color: var(--azul); }
+
+/* Frente */
+.frente { margin-bottom: 12px; overflow: hidden; }
+.frente-cab {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 10px 16px; border-bottom: 1px solid var(--borda);
+}
+.frente-tit { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
+.in-titulo {
+    font-size: 15px; font-weight: 700; color: var(--texto); text-transform: uppercase;
+    border: 1px solid transparent; border-radius: 6px; padding: 4px 6px; margin-left: -6px;
+    background: transparent; min-width: 200px; outline: 0;
+}
+.in-titulo:hover { border-color: var(--borda); }
+.in-titulo:focus { border-color: var(--verde); background: #fff; }
+.frente-resumo { font-size: 12px; color: var(--texto-suave); }
+.frente-acoes { display: flex; gap: 6px; }
+
+/* Tabela editável */
+.tab-chuva td { padding: 6px 8px; }
+.tab-chuva th { padding: 8px; }
+.tab-chuva th:first-child, .tab-chuva td:first-child { padding-left: 16px; }
+.tab-chuva input, .tab-chuva select {
+    width: 100%; font-size: 13px; color: var(--texto);
+    border: 1px solid var(--borda); border-radius: 6px; padding: 6px 8px; background: #fff; outline: 0;
+}
+.tab-chuva input:focus, .tab-chuva select:focus { border-color: var(--verde); box-shadow: 0 0 0 3px rgba(30,122,70,.12); }
+.in-faz { font-weight: 600; text-transform: uppercase; min-width: 200px; }
+.in-fonte { text-transform: uppercase; width: 96px !important; }
+.col-mm { width: 92px; }
+.in-mm { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.col-total { width: 110px; text-align: right; }
+.col-acao { width: 40px; }
+.in-status { min-width: 140px; font-weight: 600; cursor: pointer; }
+.in-status.st-trab { background: var(--verde-claro-bg); border-color: var(--verde-borda); color: var(--verde-texto); }
+.in-status.st-parado { background: var(--vermelho-bg); border-color: var(--vermelho-borda); color: var(--vermelho-texto); }
+tr.linha-nova td { background: #fffdf5; }
+
+/* Total com intensidade de chuva */
+.total {
+    display: inline-block; min-width: 76px; padding: 4px 8px; border-radius: 6px;
+    font-weight: 700; font-variant-numeric: tabular-nums; text-align: right;
+}
+.total.mm0 { color: var(--texto-suave); background: #f3f4f6; }
+.total.mm1 { color: #1e4f8a; background: #e3eefb; }
+.total.mm2 { color: #fff; background: #3b82c4; }
+.total.mm3 { color: #fff; background: #1d4f91; }
+
+.escala { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 11px; color: var(--texto-suave); margin: 0 2px 10px; }
+.escala .total { min-width: 0; font-size: 11px; padding: 2px 8px; }
+
+/* Observações */
+.obs-geral { padding: 12px 16px; }
+.obs-geral textarea {
+    width: 100%; min-height: 64px; margin-top: 6px; resize: vertical;
+    font: inherit; font-size: 13px; color: var(--texto);
+    border: 1px solid var(--borda); border-radius: 6px; padding: 8px 10px; outline: 0;
+}
+.obs-geral textarea:focus { border-color: var(--verde); box-shadow: 0 0 0 3px rgba(30,122,70,.12); }
+
+.barra-acoes { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 2px 8px; }
+
+/* ---------------------------------------------------------------------
+   PRINT (WhatsApp) e PDF: campos viram texto, botões somem
+   --------------------------------------------------------------------- */
+.modo-print .so-tela { display: none !important; }
+.modo-print .tab-chuva input, .modo-print .tab-chuva select, .modo-print .in-titulo, .modo-print .obs-geral textarea {
+    border-color: transparent !important; box-shadow: none !important; background: transparent; padding-left: 0;
+    -webkit-appearance: none; appearance: none;
+}
+.modo-print tr.linha-nova { display: none; }
+.modo-print .in-status.st-trab { color: var(--verde-texto); }
+.modo-print .in-status.st-parado { color: var(--vermelho-texto); }
+
+@media print {
+    body, .conteudo { background: #fff; }
+    .topo, .so-tela { display: none !important; }
+    .card { box-shadow: none; }
+    .frente { break-inside: avoid; }
+    .tab-chuva input, .tab-chuva select, .in-titulo, .obs-geral textarea {
+        border-color: transparent !important; background: transparent !important; -webkit-appearance: none; appearance: none;
+    }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

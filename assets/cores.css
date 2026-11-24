@@ -1,0 +1,85 @@
+/* =====================================================================
+   GESTOR DE CORES — estilos específicos
+   (base em usa-base.css + listas em cadastros.css)
+   ===================================================================== */
+.pagina-cores { max-width: 1180px; padding-bottom: 90px; }
+
+.ferramentas-cores {
+    display: grid; grid-template-columns: minmax(220px, 320px) 1fr; gap: 12px; align-items: start;
+    margin-bottom: 12px;
+}
+.paleta-box { padding: 10px 14px; }
+.paleta-box .rotulo { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+#paleta-alvo { text-transform: none; letter-spacing: 0; color: var(--texto-2); font-weight: 600; }
+#paleta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.paleta-cor {
+    width: 26px; height: 26px; border-radius: 6px; cursor: pointer;
+    border: 2px solid #fff; box-shadow: 0 0 0 1px var(--borda-forte);
+}
+.paleta-cor:hover { transform: scale(1.12); }
+
+.grupo-cores { margin-bottom: 12px; }
+.grupo-cab { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.grupo-cab h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.grupo-cab span { font-size: 12px; color: var(--texto-suave); }
+
+.grade-cores { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
+
+.cor-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 8px; border: 1px solid var(--borda); background: #fff;
+    cursor: pointer; outline: 0;
+}
+.cor-item:hover { border-color: var(--borda-forte); }
+.cor-item.sel, .cor-item:focus-visible { border-color: var(--verde); box-shadow: 0 0 0 3px rgba(30,122,70,.12); }
+.cor-item.conf-igual { background: var(--vermelho-bg); border-color: var(--vermelho-borda); }
+.cor-item.conf-parecida { background: var(--ambar-bg); border-color: var(--ambar-borda); }
+
+.cor-amostra {
+    position: relative; width: 34px; height: 34px; border-radius: 8px; flex: none; cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.15);
+}
+.cor-amostra input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+
+.cor-info { flex: 1; min-width: 0; }
+
+/* "Igual a…" — vínculo com a cor de outro item */
+.sel-igual {
+    margin-top: 6px; width: 100%; max-width: 260px;
+    font-size: 11.5px; color: var(--texto-2); background: #fff;
+    border: 1px solid var(--borda); border-radius: 6px; padding: 3px 6px; cursor: pointer; outline: 0;
+}
+.sel-igual:focus { border-color: var(--verde); }
+.cor-item.vinculada .sel-igual { border-color: var(--verde-borda); background: var(--verde-claro-bg); color: var(--verde-texto); font-weight: 600; }
+.origem-vinculo { color: var(--verde-texto); font-weight: 600; }
+.icone-vinculo {
+    position: absolute; right: -6px; bottom: -6px; width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; box-shadow: 0 0 0 1px var(--borda); font-size: 10px;
+    display: flex; align-items: center; justify-content: center; pointer-events: none;
+}
+.cor-nome { font-size: 12.5px; font-weight: 600; color: var(--texto); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cor-meta { display: flex; flex-wrap: wrap; gap: 0 8px; margin-top: 2px; font-size: 11px; color: var(--texto-suave); }
+.cor-meta .mono { font-family: ui-monospace, Consolas, monospace; }
+.cor-meta .alerta { color: var(--vermelho-texto); font-weight: 600; }
+.conf-parecida .cor-meta .alerta { color: var(--ambar-texto); }
+.tag-alt {
+    font-size: 10px; font-weight: 700; color: var(--ambar-texto); background: var(--ambar-bg);
+    border-radius: 999px; padding: 1px 6px; margin-left: 4px; vertical-align: middle;
+}
+
+.previa-box { padding: 12px 14px; margin-bottom: 12px; }
+#previa { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+/* Barra fixa de salvar */
+.barra-salvar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+    display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 10px 16px; background: #fff; border-top: 1px solid var(--borda);
+    box-shadow: 0 -4px 12px rgba(16,24,40,.06);
+}
+.barra-salvar[hidden] { display: none; }
+.barra-salvar span { font-size: 13px; font-weight: 600; color: var(--ambar-texto); }
+
+@media (max-width: 700px) {
+    .ferramentas-cores { grid-template-columns: 1fr; }
+}

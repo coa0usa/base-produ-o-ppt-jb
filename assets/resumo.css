@@ -1,0 +1,73 @@
+/* =====================================================================
+   RESUMO PPT — estilos específicos (base comum em usa-base.css)
+   ===================================================================== */
+
+.relatorio { max-width: 1040px; }
+
+.rel-cab {
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+.rel-cab h2 { margin: 0; font-size: 18px; font-weight: 700; }
+.rel-cab .meta { margin-top: 2px; font-size: 12px; color: var(--texto-suave); }
+.rel-cab .gerado { font-size: 11px; color: var(--texto-suave); }
+
+/* Seção de processo */
+.proc { margin-bottom: 12px; overflow: hidden; }
+.proc-cab {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+    padding: 14px 16px; border-bottom: 1px solid var(--borda);
+}
+.proc-cab h3 { margin: 0; font-size: 15px; font-weight: 700; }
+.proc-meta { display: flex; flex-wrap: wrap; gap: 0 10px; margin-top: 3px; font-size: 12px; color: var(--texto-suave); }
+.proc-meta span + span::before { content: "·"; margin-right: 10px; }
+.proc-total {
+    font-size: 22px; font-weight: 700; white-space: nowrap; line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+.proc-total small { font-size: 12px; font-weight: 600; color: var(--texto-suave); margin-left: 4px; }
+
+/* Consolidado por operação (barras horizontais) */
+.ops { padding: 12px 16px 4px; display: grid; gap: 6px; }
+.op { display: grid; grid-template-columns: minmax(120px, 240px) 1fr 72px; align-items: center; gap: 10px; font-size: 12px; }
+.op-nome { color: var(--texto-2); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.op-barra { height: 8px; background: #eef1f3; border-radius: 999px; overflow: hidden; }
+.op-barra i { display: block; height: 100%; background: var(--verde); border-radius: 999px; }
+.op-valor { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.proc .tabela-box { margin-top: 8px; border-top: 1px solid var(--borda); }
+
+/* Eficiência da linha (horas produtivas ÷ horas apontadas) */
+.efic { display: inline-block; min-width: 44px; padding: 2px 6px; border-radius: 999px; font-weight: 700; font-size: 12px; text-align: center; }
+.efic.alta  { background: var(--verde-claro-bg); color: var(--verde-texto); }
+.efic.media { background: var(--ambar-bg); color: var(--ambar-texto); }
+.efic.baixa { background: var(--vermelho-bg); color: var(--vermelho-texto); }
+.proc td b { color: var(--texto); }
+
+.proc-rodape {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 10px 16px; border-top: 1px solid var(--borda);
+    background: #fafafa; font-size: 12px; color: var(--texto-2);
+}
+
+.sem-prod .proc-cab { border-bottom: 0; padding-bottom: 6px; }
+.sem-prod-lista { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 14px; }
+
+/* ---------------------------------------------------------------------
+   IMPRESSÃO / PDF
+   --------------------------------------------------------------------- */
+@page { size: A4; margin: 12mm; }
+@media print {
+    body, .conteudo { background: #fff; }
+    .topo { display: none; }
+    .conteudo { padding: 0; max-width: none; }
+    .card { box-shadow: none; }
+    .proc, .kpis { break-inside: avoid; }
+    tbody tr:hover td { background: none; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+@media (max-width: 600px) {
+    .op { grid-template-columns: 1fr 64px; }
+    .op-barra { grid-column: 1 / -1; grid-row: 2; }
+}
