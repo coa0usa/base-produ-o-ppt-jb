@@ -110,7 +110,7 @@
         <a href="Resumo_PPT.html" class="tab-item">📈 Resumo PPT</a>
         <a href="Pasta_viva.html" class="tab-item tab-active">📂 Pasta Viva</a>
         <a href="Banco_dados_PPT.html" class="tab-item">🗄️ Banco de Dados</a>
-        <a href="Graficos_Herbicida.html" class="tab-item">📊 Graficos</a>
+        <a href="Graficos.html" class="tab-item">📊 Graficos</a>
     </nav>
 
     <div class="no-print-area">
@@ -155,49 +155,34 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="assets/firebase-config.js"></script>
+    <script src="assets/graficos-config.js"></script>
+    <script src="assets/usa-core.js"></script>
     <script>
         let dadosGlobal = [];
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyBrII6e6J6CmcOgsPxq4UWnj9dVf3fY_dw",
-          authDomain: "base-producao-ppt.firebaseapp.com",
-          projectId: "base-producao-ppt",
-          storageBucket: "base-producao-ppt.firebasestorage.app",
-          messagingSenderId: "651044736107",
-          appId: "1:651044736107:web:db202cb04a0c5e23c7352e",
-          measurementId: "G-HS3RMY3SSX"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const dbFirestore = firebase.firestore();
-
-        // Escuta alterações de dados no Firestore em tempo real
-        dbFirestore.collection('app_data').doc('dados').onSnapshot((doc) => {
-            dadosGlobal = doc.exists ? (doc.data().list || []) : [];
+        // Baixa só o dia operacional escolhido (armazenamento por dia — ver assets/usa-core.js)
+        const garantirDados = USA.assinaturaDoDiaOperacional((lista) => {
+            dadosGlobal = lista;
             gerarRelatorio();
         });
 
         window.onload = () => {
-            document.getElementById('input-data').value = new Date().toISOString().split('T')[0];
+            document.getElementById('input-data').value = USA.hojeISO();
+            USA.aoMudarTurnos(gerarRelatorio);   // turno de cada processo vem de Cadastros
             gerarRelatorio();
         };
 
         function gerarRelatorio() {
             const dataInput = document.getElementById('input-data').value;
             if(!dataInput) return;
-            const dataBase = dataInput.split('-').reverse().join('/');
+            if (garantirDados(dataInput)) dadosGlobal = [];
+            const dataBase = USA.isoParaBR(dataInput);
             document.getElementById('label-data').innerText = dataBase;
 
             const resumoPorProcesso = {};
 
-            const dSeg = new Date(dataInput + "T12:00:00"); 
-            dSeg.setDate(dSeg.getDate() + 1);
-            const dataApos = dSeg.toISOString().split('T')[0].split('-').reverse().join('/');
-
-            const lancamentos = dadosGlobal.filter(i => {
-                const h = parseInt(i.hora);
-                return (h >= 5 && i.data === dataBase) || (h >= 0 && h <= 4 && i.data === dataApos);
-            });
+            const lancamentos = dadosGlobal.filter(i => USA.noDiaOperacional(i, USA.regraDoRegistro(i.proc), dataInput));
 
             lancamentos.forEach(i => {
                 const proc = (i.proc || "OPERACIONAL").trim().toUpperCase();

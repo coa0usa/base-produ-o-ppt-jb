@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráficos Operacionais</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/usa-base.css">
+    <link rel="stylesheet" href="assets/graficos.css">
+
+    <!-- Bibliotecas (versões fixas para não quebrar com atualizações) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <!-- Código do sistema -->
+    <script src="assets/firebase-config.js"></script>
+    <script src="assets/graficos-config.js"></script>
+    <script src="assets/usa-core.js"></script>
+    <script src="assets/graficos.js"></script>
+</head>
+<body>
+
+<header class="topo">
+    <div class="topo-linha">
+        <div class="topo-titulo">
+            <h1>Gráficos Operacionais</h1>
+            <p>Produção hora a hora e motivos de parada por frota — dia operacional</p>
+        </div>
+        <div class="topo-acoes">
+            <label class="pill pill-select" title="Processo">
+                <select id="select-proc" aria-label="Processo"></select>
+            </label>
+            <div class="pill pill-data">
+                <button type="button" id="btn-dia-ant" title="Dia anterior" aria-label="Dia anterior">‹</button>
+                <input type="date" id="filtro-data" aria-label="Data">
+                <button type="button" id="btn-dia-prox" title="Próximo dia" aria-label="Próximo dia">›</button>
+            </div>
+            <button type="button" id="btn-hoje" class="pill">Hoje</button>
+            <span id="status-conexao" class="pill status-conexao"><span class="ponto"></span><span id="status-texto">Conectando…</span></span>
+            <button type="button" id="btnPrint" class="btn-icone" title="Copiar print do painel" aria-label="Copiar print">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <nav class="abas">
+        <a href="Gestor de Cores.html" class="aba">Gestor de Cores</a>
+        <a href="Cadastros.html" class="aba">Cadastros</a>
+        <a href="Localizacao_Frota.html" class="aba">Localização Frota</a>
+        <a href="Monitoramento_Chuva.html" class="aba">Chuva</a>
+        <a href="Resumo_PPT.html" class="aba">Resumo PPT</a>
+        <a href="Graficos.html" class="aba ativa">Gráficos</a>
+        <a href="Pasta_viva.html" class="aba">Pasta Viva</a>
+        <a href="Banco_dados_PPT.html" class="aba">Banco de Dados</a>
+    </nav>
+</header>
+
+<main class="conteudo" id="area-print">
+    <div class="contexto">
+        <h2 id="ctx-proc">—</h2>
+        <span class="meta" id="ctx-data"></span>
+        <span class="meta" id="tag-turno"></span>
+    </div>
+
+    <div id="status-dia" class="status-dia">
+        <div class="icone" id="status-icone"></div>
+        <div><strong id="status-titulo">Carregando…</strong><span id="status-sub"></span></div>
+    </div>
+
+    <section class="kpis">
+        <div class="card kpi destaque">
+            <div class="rotulo" id="lbl_total">Total produzido</div>
+            <div class="valor" id="v_total">0</div>
+            <div class="detalhe" id="v_total_det"></div>
+        </div>
+        <div class="card kpi">
+            <div class="rotulo">Eficiência</div>
+            <div class="valor" id="v_efici">0%</div>
+            <div class="detalhe" id="v_efici_det"></div>
+        </div>
+        <div class="card kpi">
+            <div class="rotulo">Rendimento / hora</div>
+            <div class="valor" id="v_media_h">0</div>
+            <div class="detalhe">por hora produtiva</div>
+        </div>
+        <div class="card kpi">
+            <div class="rotulo">Rendimento / equip.</div>
+            <div class="valor" id="v_media_eq">0</div>
+            <div class="detalhe" id="v_media_eq_det"></div>
+        </div>
+    </section>
+
+    <section class="bloco">
+        <div class="bloco-cab"><h3>Produção por frota e operação</h3></div>
+        <div class="card tabela-box">
+            <table>
+                <thead>
+                    <tr><th>Frota</th><th>Fazenda</th><th>Operação</th><th class="num">Total</th><th class="num">Rend./h</th></tr>
+                </thead>
+                <tbody id="corpo_tab"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="bloco">
+        <div class="bloco-cab">
+            <h3>Desempenho por frota</h3>
+            <span class="contagem" id="cont-frotas">0</span>
+        </div>
+        <div class="grid-frotas" id="grid_eq"></div>
+    </section>
+</main>
+
+</body>
+</html>
